@@ -2,11 +2,10 @@ module Main exposing (main)
 
 import Browser exposing (Document)
 import Css
-import Debug exposing (..)
 import Html
-import Html.Styled as S exposing (button, div, h1, option, select, span, text, textarea, toUnstyled)
+import Html.Styled as S exposing (button, div, h1, option, select, text, textarea, toUnstyled)
 import Html.Styled.Attributes as A exposing (css)
-import Html.Styled.Events as E exposing (onClick, onInput)
+import Html.Styled.Events exposing (onClick, onInput)
 import Platform.Cmd as C
 import Tactics
 
@@ -62,7 +61,12 @@ update m s =
                     ( GameSelect new_sel players, C.none )
 
                 GameStart ->
-                    todo "GamesStart"
+                    case sel of
+                        "Tactics" ->
+                            ( TacticsState <| Tactics.makeInitState <| String.split "\n" players, C.none )
+
+                        _ ->
+                            ( GameSelect sel players, C.none )
 
                 _ ->
                     ( s, C.none )

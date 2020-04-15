@@ -615,7 +615,7 @@ view s =
                            , span [ css [ Css.fontSize <| pt 15 ] ] [ text nextUp ]
                            , br [] []
                            , button [ onClick UndoMsg, css [ Css.marginTop <| px 75 ] ] [ text "Undo" ]
-                           , button [ css [ Css.marginTop <| px 25 ] ] [ text "Exit" ]
+                           , button [ onClick ExitMsg, css [ Css.marginTop <| px 25 ] ] [ text "Exit" ]
                            ]
                     )
                 , div [ css [ Css.float Css.left, Css.width <| Css.pct 50 ] ]
