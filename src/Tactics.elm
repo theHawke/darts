@@ -54,7 +54,7 @@ type alias Choice =
 type alias ScoreEntry =
     { value : Int
     , variant : Int
-    , useSpecial : Bool -- whether to count as double or triple
+    , useSpecial : Bool -- whether to count as double/triple or not
     }
 
 
@@ -211,14 +211,28 @@ scoreEntryUpdate { value, variant, useSpecial } s =
                     case s.currentTeam of
                         A ->
                             if count > ca then
-                                ( category, ca, point_value * (count - ca) )
+                                ( category
+                                , ca
+                                , if cb > 0 then
+                                    point_value * (count - ca)
+
+                                  else
+                                    0
+                                )
 
                             else
                                 ( category, count, 0 )
 
                         B ->
                             if count > cb then
-                                ( category, cb, point_value * (count - cb) )
+                                ( category
+                                , cb
+                                , if ca > 0 then
+                                    point_value * (count - cb)
+
+                                  else
+                                    0
+                                )
 
                             else
                                 ( category, count, 0 )
@@ -346,7 +360,7 @@ undoUpdate s =
                                 Just ( ca, cb + count )
 
                         Nothing ->
-                            if new_team == B then
+                            if new_team == A then
                                 Just ( count, 0 )
 
                             else
@@ -386,7 +400,7 @@ otherTeam t =
 tableRows : List ( Int, String )
 tableRows =
     List.map (\n -> ( n, String.fromInt n )) [ 20, 19, 18, 17, 16, 15, 14, 13, 12 ]
-        ++ [ ( 22, "Double" ), ( 23, "Triple" ), ( 25, "Bull" ) ]
+        ++ [ ( 23, "Triple" ), ( 22, "Double" ), ( 25, "Bull" ) ]
 
 
 tableRow : State -> ( Int, String ) -> S.Html a
@@ -394,11 +408,18 @@ tableRow s ( n, label ) =
     let
         ( ca, cb ) =
             Maybe.withDefault ( 0, 0 ) <| Dict.get n s.scoreBoard
+
+        finished_css =
+            if Dict.member n s.scoreBoard then
+                []
+
+            else
+                [ Css.textDecoration Css.lineThrough, Css.property "filter" "grayscale(100%)" ]
     in
-    tr []
-        [ td [] <| List.repeat ca <| text "🎯"
+    tr [ css finished_css ]
+        [ td [] <| List.repeat (3 - ca) <| text "🎯"
         , td [] [ text label ]
-        , td [] <| List.repeat cb <| text "🎯"
+        , td [] <| List.repeat (3 - cb) <| text "🎯"
         ]
 
 
@@ -484,8 +505,15 @@ view s =
                             else
                                 cb_val
 
+                        c_val_other =
+                            if s.currentTeam == A then
+                                cb_val
+
+                            else
+                                ca_val
+
                         points1S =
-                            if c_val < variant then
+                            if c_val < variant && c_val_other > 0 then
                                 " (" ++ (String.fromInt <| (variant - c_val) * value) ++ " points)"
 
                             else
@@ -501,8 +529,15 @@ view s =
                             else
                                 cb_var
 
+                        c_var_other =
+                            if s.currentTeam == A then
+                                cb_var
+
+                            else
+                                ca_var
+
                         points2S =
-                            if c_var == 0 then
+                            if c_var == 0 && c_var_other > 0 then
                                 " (" ++ (String.fromInt <| variant * value) ++ " points)"
 
                             else

@@ -5969,9 +5969,15 @@ var $author$project$Tactics$scoreEntryUpdate = F2(
 				var cb = _v3.b;
 				var _v4 = s.currentTeam;
 				if (_v4.$ === 'A') {
-					return (_Utils_cmp(count, ca) > 0) ? _Utils_Tuple3(category, ca, point_value * (count - ca)) : _Utils_Tuple3(category, count, 0);
+					return (_Utils_cmp(count, ca) > 0) ? _Utils_Tuple3(
+						category,
+						ca,
+						(cb > 0) ? (point_value * (count - ca)) : 0) : _Utils_Tuple3(category, count, 0);
 				} else {
-					return (_Utils_cmp(count, cb) > 0) ? _Utils_Tuple3(category, cb, point_value * (count - cb)) : _Utils_Tuple3(category, count, 0);
+					return (_Utils_cmp(count, cb) > 0) ? _Utils_Tuple3(
+						category,
+						cb,
+						(ca > 0) ? (point_value * (count - cb)) : 0) : _Utils_Tuple3(category, count, 0);
 				}
 			}
 		}();
@@ -6072,7 +6078,7 @@ var $author$project$Tactics$undoUpdate = function (s) {
 					_Utils_Tuple2(ca + count, cb)) : $elm$core$Maybe$Just(
 					_Utils_Tuple2(ca, cb + count));
 			} else {
-				return _Utils_eq(new_team, $author$project$Tactics$B) ? $elm$core$Maybe$Just(
+				return _Utils_eq(new_team, $author$project$Tactics$A) ? $elm$core$Maybe$Just(
 					_Utils_Tuple2(count, 0)) : $elm$core$Maybe$Just(
 					_Utils_Tuple2(0, count));
 			}
@@ -8749,14 +8755,14 @@ var $rtfeldman$elm_css$Svg$Styled$Attributes$y = $rtfeldman$elm_css$VirtualDom$S
 var $author$project$Dartboard$label = function (_v0) {
 	var pos = _v0.a;
 	var num = _v0.b;
-	var h = 0.14;
+	var h = 14;
 	var _v1 = $elm$core$Basics$fromPolar(
 		_Utils_Tuple2(
-			1.15,
+			115,
 			$elm$core$Basics$degrees((18.0 * pos) - 90)));
 	var xx = _v1.a;
 	var yy = _v1.b;
-	var cx = (num < 10) ? (xx - 0.04) : (xx - 0.08);
+	var cx = (num < 10) ? (xx - 4) : (xx - 8);
 	var cy = yy + (h / 2.5);
 	return A2(
 		$rtfeldman$elm_css$Svg$Styled$text_,
@@ -8786,6 +8792,7 @@ var $rtfeldman$elm_css$Svg$Styled$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
+var $rtfeldman$elm_css$Css$pointerEventsFill = A2($rtfeldman$elm_css$Css$property, 'pointer-events', 'fill');
 var $rtfeldman$elm_css$Svg$Styled$Attributes$r = $rtfeldman$elm_css$VirtualDom$Styled$attribute('r');
 var $rtfeldman$elm_css$Css$cssFunction = F2(
 	function (funcName, args) {
@@ -8978,6 +8985,7 @@ var $author$project$Dartboard$segment = F6(
 	function (cx, cy, r, top, _v0, attr) {
 		var pos = _v0.a;
 		var num = _v0.b;
+		var stroke_width = $elm$core$String$fromFloat(0.01 * r);
 		var special = $author$project$Util$even(pos) ? 'red' : 'green';
 		var r5 = 1.0 * r;
 		var r4 = 0.9 * r;
@@ -9017,7 +9025,7 @@ var $author$project$Dartboard$segment = F6(
 						[
 							$rtfeldman$elm_css$Svg$Styled$Attributes$fill(normal),
 							$rtfeldman$elm_css$Svg$Styled$Attributes$stroke('grey'),
-							$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth('0.01'),
+							$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth(stroke_width),
 							$rtfeldman$elm_css$Svg$Styled$Events$onClick(
 							$author$project$Dartboard$K(num)),
 							layer_css
@@ -9035,7 +9043,7 @@ var $author$project$Dartboard$segment = F6(
 						[
 							$rtfeldman$elm_css$Svg$Styled$Attributes$fill(special),
 							$rtfeldman$elm_css$Svg$Styled$Attributes$stroke('grey'),
-							$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth('0.01'),
+							$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth(stroke_width),
 							$rtfeldman$elm_css$Svg$Styled$Events$onClick(
 							$author$project$Dartboard$T(num)),
 							layer_css
@@ -9053,7 +9061,7 @@ var $author$project$Dartboard$segment = F6(
 						[
 							$rtfeldman$elm_css$Svg$Styled$Attributes$fill(normal),
 							$rtfeldman$elm_css$Svg$Styled$Attributes$stroke('grey'),
-							$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth('0.01'),
+							$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth(stroke_width),
 							$rtfeldman$elm_css$Svg$Styled$Events$onClick(
 							$author$project$Dartboard$G(num)),
 							layer_css
@@ -9071,7 +9079,7 @@ var $author$project$Dartboard$segment = F6(
 						[
 							$rtfeldman$elm_css$Svg$Styled$Attributes$fill(special),
 							$rtfeldman$elm_css$Svg$Styled$Attributes$stroke('grey'),
-							$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth('0.01'),
+							$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth(stroke_width),
 							$rtfeldman$elm_css$Svg$Styled$Events$onClick(
 							$author$project$Dartboard$D(num)),
 							layer_css
@@ -9106,7 +9114,10 @@ var $author$project$Dartboard$dartboard = F2(
 							$elm$core$String$fromInt(size)),
 							$rtfeldman$elm_css$Svg$Styled$Attributes$height(
 							$elm$core$String$fromInt(size)),
-							$rtfeldman$elm_css$Svg$Styled$Attributes$viewBox('-1.5 -1.5 3 3')
+							$rtfeldman$elm_css$Svg$Styled$Attributes$viewBox('-150 -150 300 300'),
+							$rtfeldman$elm_css$Svg$Styled$Attributes$css(
+							_List_fromArray(
+								[$rtfeldman$elm_css$Css$pointerEventsFill]))
 						]),
 					A2(
 						$elm$core$List$cons,
@@ -9116,7 +9127,7 @@ var $author$project$Dartboard$dartboard = F2(
 								[
 									$rtfeldman$elm_css$Svg$Styled$Attributes$cx('0'),
 									$rtfeldman$elm_css$Svg$Styled$Attributes$cy('0'),
-									$rtfeldman$elm_css$Svg$Styled$Attributes$r('1.3'),
+									$rtfeldman$elm_css$Svg$Styled$Attributes$r('130'),
 									$rtfeldman$elm_css$Svg$Styled$Attributes$fill('black'),
 									$rtfeldman$elm_css$Svg$Styled$Events$onClick($author$project$Dartboard$N)
 								]),
@@ -9127,7 +9138,7 @@ var $author$project$Dartboard$dartboard = F2(
 								A2(
 									$elm$core$List$map,
 									function (n) {
-										return A6($author$project$Dartboard$segment, 0, 0, 1, false, n, _List_Nil);
+										return A6($author$project$Dartboard$segment, 0, 0, 100, false, n, _List_Nil);
 									},
 									$author$project$Dartboard$segments),
 								_Utils_ap(
@@ -9139,10 +9150,10 @@ var $author$project$Dartboard$dartboard = F2(
 												[
 													$rtfeldman$elm_css$Svg$Styled$Attributes$cx('0'),
 													$rtfeldman$elm_css$Svg$Styled$Attributes$cy('0'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$r('0.15'),
+													$rtfeldman$elm_css$Svg$Styled$Attributes$r('15'),
 													$rtfeldman$elm_css$Svg$Styled$Attributes$fill('green'),
 													$rtfeldman$elm_css$Svg$Styled$Attributes$stroke('grey'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth('0.01'),
+													$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth('1'),
 													$rtfeldman$elm_css$Svg$Styled$Events$onClick($author$project$Dartboard$Bull),
 													$rtfeldman$elm_css$Svg$Styled$Attributes$css(
 													_List_fromArray(
@@ -9162,10 +9173,10 @@ var $author$project$Dartboard$dartboard = F2(
 												[
 													$rtfeldman$elm_css$Svg$Styled$Attributes$cx('0'),
 													$rtfeldman$elm_css$Svg$Styled$Attributes$cy('0'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$r('0.07'),
+													$rtfeldman$elm_css$Svg$Styled$Attributes$r('7'),
 													$rtfeldman$elm_css$Svg$Styled$Attributes$fill('red'),
 													$rtfeldman$elm_css$Svg$Styled$Attributes$stroke('grey'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth('0.01'),
+													$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth('1'),
 													$rtfeldman$elm_css$Svg$Styled$Events$onClick($author$project$Dartboard$DBull),
 													$rtfeldman$elm_css$Svg$Styled$Attributes$css(
 													_List_fromArray(
@@ -9183,7 +9194,7 @@ var $author$project$Dartboard$dartboard = F2(
 									A2(
 										$elm$core$List$map,
 										function (n) {
-											return A6($author$project$Dartboard$segment, 0, 0, 1, true, n, _List_Nil);
+											return A6($author$project$Dartboard$segment, 0, 0, 100, true, n, _List_Nil);
 										},
 										$author$project$Dartboard$segments))))))
 				]));
@@ -9416,12 +9427,19 @@ var $rtfeldman$elm_css$Html$Styled$Attributes$src = function (url) {
 	return A2($rtfeldman$elm_css$Html$Styled$Attributes$stringProperty, 'src', url);
 };
 var $rtfeldman$elm_css$Html$Styled$table = $rtfeldman$elm_css$Html$Styled$node('table');
+var $rtfeldman$elm_css$Css$lineThrough = {textDecorationLine: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'line-through'};
 var $rtfeldman$elm_css$Html$Styled$td = $rtfeldman$elm_css$Html$Styled$node('td');
+var $rtfeldman$elm_css$Css$textDecoration = $rtfeldman$elm_css$Css$prop1('text-decoration');
 var $rtfeldman$elm_css$Html$Styled$tr = $rtfeldman$elm_css$Html$Styled$node('tr');
 var $author$project$Tactics$tableRow = F2(
 	function (s, _v0) {
 		var n = _v0.a;
 		var label = _v0.b;
+		var finished_css = A2($elm$core$Dict$member, n, s.scoreBoard) ? _List_Nil : _List_fromArray(
+			[
+				$rtfeldman$elm_css$Css$textDecoration($rtfeldman$elm_css$Css$lineThrough),
+				A2($rtfeldman$elm_css$Css$property, 'filter', 'grayscale(100%)')
+			]);
 		var _v1 = A2(
 			$elm$core$Maybe$withDefault,
 			_Utils_Tuple2(0, 0),
@@ -9430,7 +9448,10 @@ var $author$project$Tactics$tableRow = F2(
 		var cb = _v1.b;
 		return A2(
 			$rtfeldman$elm_css$Html$Styled$tr,
-			_List_Nil,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Attributes$css(finished_css)
+				]),
 			_List_fromArray(
 				[
 					A2(
@@ -9438,7 +9459,7 @@ var $author$project$Tactics$tableRow = F2(
 					_List_Nil,
 					A2(
 						$elm$core$List$repeat,
-						ca,
+						3 - ca,
 						$rtfeldman$elm_css$Html$Styled$text('🎯'))),
 					A2(
 					$rtfeldman$elm_css$Html$Styled$td,
@@ -9452,7 +9473,7 @@ var $author$project$Tactics$tableRow = F2(
 					_List_Nil,
 					A2(
 						$elm$core$List$repeat,
-						cb,
+						3 - cb,
 						$rtfeldman$elm_css$Html$Styled$text('🎯')))
 				]));
 	});
@@ -9468,8 +9489,8 @@ var $author$project$Tactics$tableRows = _Utils_ap(
 			[20, 19, 18, 17, 16, 15, 14, 13, 12])),
 	_List_fromArray(
 		[
-			_Utils_Tuple2(22, 'Double'),
 			_Utils_Tuple2(23, 'Triple'),
+			_Utils_Tuple2(22, 'Double'),
 			_Utils_Tuple2(25, 'Bull')
 		]));
 var $rtfeldman$elm_css$Html$Styled$Attributes$colspan = function (n) {
@@ -9602,7 +9623,8 @@ var $author$project$Tactics$view = function (s) {
 			var ca_var = _v6.a;
 			var cb_var = _v6.b;
 			var c_var = _Utils_eq(s.currentTeam, $author$project$Tactics$A) ? ca_var : cb_var;
-			var points2S = (!c_var) ? (' (' + ($elm$core$String$fromInt(variant * value) + ' points)')) : '';
+			var c_var_other = _Utils_eq(s.currentTeam, $author$project$Tactics$A) ? cb_var : ca_var;
+			var points2S = ((!c_var) && (c_var_other > 0)) ? (' (' + ($elm$core$String$fromInt(variant * value) + ' points)')) : '';
 			var _v7 = A2(
 				$elm$core$Maybe$withDefault,
 				_Utils_Tuple2(0, 0),
@@ -9610,7 +9632,8 @@ var $author$project$Tactics$view = function (s) {
 			var ca_val = _v7.a;
 			var cb_val = _v7.b;
 			var c_val = _Utils_eq(s.currentTeam, $author$project$Tactics$A) ? ca_val : cb_val;
-			var points1S = (_Utils_cmp(c_val, variant) < 0) ? (' (' + ($elm$core$String$fromInt((variant - c_val) * value) + ' points)')) : '';
+			var c_val_other = _Utils_eq(s.currentTeam, $author$project$Tactics$A) ? cb_val : ca_val;
+			var points1S = ((_Utils_cmp(c_val, variant) < 0) && (c_val_other > 0)) ? (' (' + ($elm$core$String$fromInt((variant - c_val) * value) + ' points)')) : '';
 			return _Utils_Tuple2(
 				$elm$core$String$fromInt(variant) + (' x ' + (fieldString + points1S)),
 				_Utils_ap(

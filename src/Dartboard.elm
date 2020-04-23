@@ -21,14 +21,14 @@ type Dartboard
 dartboard : Int -> List (Attribute Dartboard) -> Html Dartboard
 dartboard size attr =
     div attr
-        [ svg [ width (String.fromInt size), height (String.fromInt size), viewBox "-1.5 -1.5 3 3" ]
-            (circle [ cx "0", cy "0", r "1.3", fill "black", onClick N ] []
+        [ svg [ width (String.fromInt size), height (String.fromInt size), viewBox "-150 -150 300 300", css [ Css.pointerEventsFill ] ]
+            (circle [ cx "0", cy "0", r "130", fill "black", onClick N ] []
                 :: List.map label segments
-                ++ List.map (\n -> segment 0 0 1 False n []) segments
-                ++ [ circle [ cx "0", cy "0", r "0.15", fill "green", stroke "grey", strokeWidth "0.01", onClick Bull, css [ hover [ transform (scale 1.1) ] ] ] []
-                   , circle [ cx "0", cy "0", r "0.07", fill "red", stroke "grey", strokeWidth "0.01", onClick DBull, css [ hover [ transform (scale 1.15) ] ] ] []
+                ++ List.map (\n -> segment 0 0 100 False n []) segments
+                ++ [ circle [ cx "0", cy "0", r "15", fill "green", stroke "grey", strokeWidth "1", onClick Bull, css [ hover [ transform (scale 1.1) ] ] ] []
+                   , circle [ cx "0", cy "0", r "7", fill "red", stroke "grey", strokeWidth "1", onClick DBull, css [ hover [ transform (scale 1.15) ] ] ] []
                    ]
-                ++ List.map (\n -> segment 0 0 1 True n []) segments
+                ++ List.map (\n -> segment 0 0 100 True n []) segments
             )
         ]
 
@@ -37,17 +37,17 @@ label : ( Int, Int ) -> Svg alias
 label ( pos, num ) =
     let
         h =
-            0.14
+            14
 
         ( xx, yy ) =
-            fromPolar ( 1.15, degrees <| 18.0 * toFloat pos - 90 )
+            fromPolar ( 115, degrees <| 18.0 * toFloat pos - 90 )
 
         cx =
             if num < 10 then
-                xx - 0.04
+                xx - 4
 
             else
-                xx - 0.08
+                xx - 8
 
         cy =
             yy + h / 2.5
@@ -101,12 +101,15 @@ segment cx cy r top ( pos, num ) attr =
                  else
                     []
                 )
+
+        stroke_width =
+            String.fromFloat <| 0.01 * r
     in
     g ([] ++ attr)
-        [ circleArc cx cy r1 r2 a0 a1 top [ fill normal, stroke "grey", strokeWidth "0.01", onClick (K num), layer_css ]
-        , circleArc cx cy r2 r3 a0 a1 top [ fill special, stroke "grey", strokeWidth "0.01", onClick (T num), layer_css ]
-        , circleArc cx cy r3 r4 a0 a1 top [ fill normal, stroke "grey", strokeWidth "0.01", onClick (G num), layer_css ]
-        , circleArc cx cy r4 r5 a0 a1 top [ fill special, stroke "grey", strokeWidth "0.01", onClick (D num), layer_css ]
+        [ circleArc cx cy r1 r2 a0 a1 top [ fill normal, stroke "grey", strokeWidth stroke_width, onClick (K num), layer_css ]
+        , circleArc cx cy r2 r3 a0 a1 top [ fill special, stroke "grey", strokeWidth stroke_width, onClick (T num), layer_css ]
+        , circleArc cx cy r3 r4 a0 a1 top [ fill normal, stroke "grey", strokeWidth stroke_width, onClick (G num), layer_css ]
+        , circleArc cx cy r4 r5 a0 a1 top [ fill special, stroke "grey", strokeWidth stroke_width, onClick (D num), layer_css ]
         ]
 
 
