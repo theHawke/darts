@@ -39,7 +39,7 @@ initState =
 
 games : List String
 games =
-    [ "Tactics", "501" ]
+    [ "Tactics" ]
 
 
 update : Msg -> State -> ( State, C.Cmd a )
@@ -63,10 +63,10 @@ update m s =
                 GameStart ->
                     case sel of
                         "Tactics" ->
-                            ( TacticsState <| Tactics.makeInitState <| String.split "\n" players, C.none )
+                            ( TacticsState <| Tactics.makeInitState <| List.filter (\str -> not <| String.isEmpty str) <| String.split "\n" players, C.none )
 
                         _ ->
-                            ( GameSelect sel players, C.none )
+                            ( s, C.none )
 
                 _ ->
                     ( s, C.none )
@@ -91,15 +91,16 @@ view s =
             , body =
                 List.map toUnstyled
                     [ h1 [ css [ Css.textAlign Css.center ] ] [ text "Select your Game" ]
-                    , div []
-                        [ select [ A.size 2, A.name "Select Game" ]
+                    , div [ css [ Css.textAlign Css.center, Css.margin2 (Css.px 20) Css.auto ] ]
+                        [ select [ A.size 5, A.name "Select Game" ]
                             (List.map
                                 (makeOption sel)
                                 games
                             )
-                        , textarea [ onInput PlayersChange, A.placeholder "Enter players, one per row" ] [ text players ]
+                        , textarea [ onInput PlayersChange, A.placeholder "Enter players, one per row", A.rows 6, A.cols 30 ] [ text players ]
+                        , S.br [] []
+                        , button [ onClick GameStart, css [ Css.textAlign Css.center, Css.margin2 (Css.px 20) Css.auto ] ] [ text "Start Game" ]
                         ]
-                    , button [ onClick GameStart ] [ text "Start Game" ]
                     ]
             }
 

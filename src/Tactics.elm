@@ -2,7 +2,7 @@ module Tactics exposing (Msg, State, isExitMsg, makeInitState, update, view)
 
 import Array exposing (Array)
 import Browser
-import Css exposing (pt, px)
+import Css exposing (em, pt, px)
 import Dartboard exposing (Dartboard(..), dartboard)
 import Dict exposing (Dict)
 import Html.Styled as S exposing (br, button, div, h1, span, table, td, text, th, toUnstyled, tr)
@@ -61,7 +61,6 @@ type alias ScoreEntry =
 type Result
     = Undecided
     | Victory Team
-    | Draw
 
 
 isExitMsg : Msg -> Bool
@@ -417,9 +416,9 @@ tableRow s ( n, label ) =
                 [ Css.textDecoration Css.lineThrough, Css.property "filter" "grayscale(100%)" ]
     in
     tr [ css finished_css ]
-        [ td [] <| List.repeat (3 - ca) <| text "🎯"
+        [ td [ css [ Css.minWidth <| em 6 ] ] <| List.repeat (3 - ca) <| text "🎯"
         , td [] [ text label ]
-        , td [] <| List.repeat (3 - cb) <| text "🎯"
+        , td [ css [ Css.minWidth <| em 6 ] ] <| List.repeat (3 - cb) <| text "🎯"
         ]
 
 
@@ -441,19 +440,16 @@ victory s =
             List.sum cbs == 0
 
         a_victory =
-            a_finished && s.teamAPoints > s.teamBPoints
+            a_finished && s.teamAPoints >= s.teamBPoints
 
         b_victory =
-            b_finished && s.teamBPoints > s.teamAPoints
+            b_finished && s.teamBPoints >= s.teamAPoints
     in
     if a_victory then
         Victory A
 
     else if b_victory then
         Victory B
-
-    else if a_finished && b_finished then
-        Draw
 
     else
         Undecided
@@ -601,12 +597,12 @@ view s =
             [ h1 [ css [ Css.textAlign Css.center ] ] [ text "Tactics Scoreboard" ]
             , div []
                 [ div [ css [ Css.float Css.left, Css.position Css.relative ] ]
-                    [ S.map DartboardMsg <| dartboard 500 []
+                    [ S.map DartboardMsg <| dartboard 600 []
                     , div
                         [ css
                             ([ Css.backgroundColor Css.transparent
-                             , Css.width <| px 500
-                             , Css.height <| px 500
+                             , Css.width <| px 600
+                             , Css.height <| px 600
                              , Css.position Css.absolute
                              , Css.top <| px 0
                              , Css.left <| px 0
@@ -620,7 +616,7 @@ view s =
                                 [ Css.height <| px 200
                                 , Css.width <| px 300
                                 , Css.backgroundColor <| Css.rgba 255 255 255 0.8
-                                , Css.margin2 (px 150) Css.auto
+                                , Css.margin2 (px 200) Css.auto
                                 , Css.textAlign Css.center
                                 ]
                             ]
@@ -635,8 +631,8 @@ view s =
                 , div
                     [ css
                         [ Css.float Css.left
-                        , Css.width <| Css.pct 15
                         , Css.marginTop (px 100)
+                        , Css.marginRight (px 20)
                         , Css.textAlign Css.center
                         ]
                     ]
@@ -653,12 +649,12 @@ view s =
                            , button [ onClick ExitMsg, css [ Css.marginTop <| px 25 ] ] [ text "Exit" ]
                            ]
                     )
-                , div [ css [ Css.float Css.left, Css.width <| Css.pct 50 ] ]
+                , div [ css [ Css.float Css.left ] ]
                     [ table [ css [ Css.textAlign Css.center, Css.fontSize <| pt 16 ] ]
                         ([ tr []
-                            [ th [] [ text teamA ]
+                            [ th [ css [ Css.maxWidth <| em 15 ] ] [ text teamA ]
                             , th [] []
-                            , th [] [ text teamB ]
+                            , th [ css [ Css.maxWidth <| em 15 ] ] [ text teamB ]
                             ]
                          , tableSeparator
                          ]
