@@ -1,17 +1,3 @@
-<!DOCTYPE HTML>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Main</title>
-  <style>body { padding: 0; margin: 0; }</style>
-</head>
-
-<body>
-
-<pre id="elm"></pre>
-
-<script>
-try {
 (function(scope){
 'use strict';
 
@@ -5207,6 +5193,17 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$TacticsState = function (a) {
 	return {$: 'TacticsState', a: a};
 };
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
 var $author$project$Tactics$ExitMsg = {$: 'ExitMsg'};
 var $author$project$Tactics$isExitMsg = function (m) {
 	return _Utils_eq(m, $author$project$Tactics$ExitMsg);
@@ -5459,6 +5456,7 @@ var $author$project$Tactics$makeInitState = function (players) {
 		teamBPoints: 0
 	};
 };
+var $elm$core$Basics$not = _Basics_not;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -5895,10 +5893,10 @@ var $elm$core$Dict$update = F3(
 			return A2($elm$core$Dict$remove, targetKey, dictionary);
 		}
 	});
-var $author$project$Tactics$Draw = {$: 'Draw'};
 var $author$project$Tactics$Victory = function (a) {
 	return {$: 'Victory', a: a};
 };
+var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$List$sum = function (numbers) {
 	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
 };
@@ -5935,10 +5933,10 @@ var $author$project$Tactics$victory = function (s) {
 	var cas = _v0.a;
 	var cbs = _v0.b;
 	var a_finished = !$elm$core$List$sum(cas);
-	var a_victory = a_finished && (_Utils_cmp(s.teamAPoints, s.teamBPoints) > 0);
+	var a_victory = a_finished && (_Utils_cmp(s.teamAPoints, s.teamBPoints) > -1);
 	var b_finished = !$elm$core$List$sum(cbs);
-	var b_victory = b_finished && (_Utils_cmp(s.teamBPoints, s.teamAPoints) > 0);
-	return a_victory ? $author$project$Tactics$Victory($author$project$Tactics$A) : (b_victory ? $author$project$Tactics$Victory($author$project$Tactics$B) : ((a_finished && b_finished) ? $author$project$Tactics$Draw : $author$project$Tactics$Undecided));
+	var b_victory = b_finished && (_Utils_cmp(s.teamBPoints, s.teamAPoints) > -1);
+	return a_victory ? $author$project$Tactics$Victory($author$project$Tactics$A) : (b_victory ? $author$project$Tactics$Victory($author$project$Tactics$B) : $author$project$Tactics$Undecided);
 };
 var $author$project$Tactics$scoreEntryUpdate = F2(
 	function (_v0, s) {
@@ -6147,12 +6145,15 @@ var $author$project$Main$update = F2(
 						return _Utils_Tuple2(
 							$author$project$Main$TacticsState(
 								$author$project$Tactics$makeInitState(
-									A2($elm$core$String$split, '\n', players))),
+									A2(
+										$elm$core$List$filter,
+										function (str) {
+											return !$elm$core$String$isEmpty(str);
+										},
+										A2($elm$core$String$split, '\n', players)))),
 							$elm$core$Platform$Cmd$none);
 					} else {
-						return _Utils_Tuple2(
-							A2($author$project$Main$GameSelect, sel, players),
-							$elm$core$Platform$Cmd$none);
+						return _Utils_Tuple2(s, $elm$core$Platform$Cmd$none);
 					}
 				default:
 					return _Utils_Tuple2(s, $elm$core$Platform$Cmd$none);
@@ -6166,12 +6167,15 @@ var $author$project$Main$PlayersChange = function (a) {
 var $author$project$Main$TacticsMsg = function (a) {
 	return {$: 'TacticsMsg', a: a};
 };
+var $rtfeldman$elm_css$Css$Structure$Compatible = {$: 'Compatible'};
+var $rtfeldman$elm_css$Css$auto = {alignItemsOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, cursor: $rtfeldman$elm_css$Css$Structure$Compatible, flexBasis: $rtfeldman$elm_css$Css$Structure$Compatible, intOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, justifyContentOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible, overflow: $rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: $rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: $rtfeldman$elm_css$Css$Structure$Compatible, textRendering: $rtfeldman$elm_css$Css$Structure$Compatible, touchAction: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'auto'};
 var $rtfeldman$elm_css$VirtualDom$Styled$Node = F3(
 	function (a, b, c) {
 		return {$: 'Node', a: a, b: b, c: c};
 	});
 var $rtfeldman$elm_css$VirtualDom$Styled$node = $rtfeldman$elm_css$VirtualDom$Styled$Node;
 var $rtfeldman$elm_css$Html$Styled$node = $rtfeldman$elm_css$VirtualDom$Styled$node;
+var $rtfeldman$elm_css$Html$Styled$br = $rtfeldman$elm_css$Html$Styled$node('br');
 var $rtfeldman$elm_css$Html$Styled$button = $rtfeldman$elm_css$Html$Styled$node('button');
 var $rtfeldman$elm_css$Css$Preprocess$AppendProperty = function (a) {
 	return {$: 'AppendProperty', a: a};
@@ -6189,6 +6193,27 @@ var $rtfeldman$elm_css$VirtualDom$Styled$Attribute = F3(
 	function (a, b, c) {
 		return {$: 'Attribute', a: a, b: b, c: c};
 	});
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $rtfeldman$elm_css$VirtualDom$Styled$attribute = F2(
+	function (key, value) {
+		return A3(
+			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
+			A2($elm$virtual_dom$VirtualDom$attribute, key, value),
+			_List_Nil,
+			'');
+	});
+var $rtfeldman$elm_css$Html$Styled$Attributes$cols = function (n) {
+	return A2(
+		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
+		'cols',
+		$elm$core$String$fromInt(n));
+};
 var $rtfeldman$elm_css$Css$Structure$UniversalSelectorSequence = function (a) {
 	return {$: 'UniversalSelectorSequence', a: a};
 };
@@ -6218,7 +6243,6 @@ var $elm$core$Basics$composeL = F3(
 		return g(
 			f(x));
 	});
-var $elm$core$Basics$not = _Basics_not;
 var $elm$core$List$all = F2(
 	function (isOkay, list) {
 		return !A2(
@@ -6373,17 +6397,6 @@ var $rtfeldman$elm_css$Css$Structure$Output$charsetToString = function (charset)
 			},
 			charset));
 };
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
 var $rtfeldman$elm_css$Css$Structure$Output$mediaExpressionToString = function (expression) {
 	return '(' + (expression.feature + (A2(
 		$elm$core$Maybe$withDefault,
@@ -7956,7 +7969,7 @@ var $rtfeldman$elm_css$Html$Styled$Internal$css = function (styles) {
 var $rtfeldman$elm_css$Html$Styled$Attributes$css = $rtfeldman$elm_css$Html$Styled$Internal$css;
 var $rtfeldman$elm_css$Html$Styled$div = $rtfeldman$elm_css$Html$Styled$node('div');
 var $author$project$Main$games = _List_fromArray(
-	['Tactics', '501']);
+	['Tactics']);
 var $rtfeldman$elm_css$Html$Styled$h1 = $rtfeldman$elm_css$Html$Styled$node('h1');
 var $author$project$Main$SelectChange = function (a) {
 	return {$: 'SelectChange', a: a};
@@ -8043,6 +8056,18 @@ var $author$project$Main$mapDocument = F2(
 			title: title
 		};
 	});
+var $rtfeldman$elm_css$Css$prop2 = F3(
+	function (key, argA, argB) {
+		return A2(
+			$rtfeldman$elm_css$Css$property,
+			key,
+			A2(
+				$elm$core$String$join,
+				' ',
+				_List_fromArray(
+					[argA.value, argB.value])));
+	});
+var $rtfeldman$elm_css$Css$margin2 = $rtfeldman$elm_css$Css$prop2('margin');
 var $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -8085,22 +8110,40 @@ var $rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
 			A2($elm$json$Json$Decode$map, tagger, $rtfeldman$elm_css$Html$Styled$Events$targetValue)));
 };
 var $rtfeldman$elm_css$Html$Styled$Attributes$placeholder = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('placeholder');
+var $rtfeldman$elm_css$Css$PxUnits = {$: 'PxUnits'};
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $rtfeldman$elm_css$Css$Internal$lengthConverter = F3(
+	function (units, unitLabel, numericValue) {
+		return {
+			absoluteLength: $rtfeldman$elm_css$Css$Structure$Compatible,
+			calc: $rtfeldman$elm_css$Css$Structure$Compatible,
+			flexBasis: $rtfeldman$elm_css$Css$Structure$Compatible,
+			fontSize: $rtfeldman$elm_css$Css$Structure$Compatible,
+			length: $rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrAutoOrCoverOrContain: $rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrNone: $rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrNoneOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible,
+			lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible,
+			numericValue: numericValue,
+			textIndent: $rtfeldman$elm_css$Css$Structure$Compatible,
+			unitLabel: unitLabel,
+			units: units,
+			value: _Utils_ap(
+				$elm$core$String$fromFloat(numericValue),
+				unitLabel)
+		};
+	});
+var $rtfeldman$elm_css$Css$px = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PxUnits, 'px');
+var $rtfeldman$elm_css$Html$Styled$Attributes$rows = function (n) {
+	return A2(
+		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
+		'rows',
+		$elm$core$String$fromInt(n));
+};
 var $rtfeldman$elm_css$Html$Styled$select = $rtfeldman$elm_css$Html$Styled$node('select');
-var $elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var $rtfeldman$elm_css$VirtualDom$Styled$attribute = F2(
-	function (key, value) {
-		return A3(
-			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
-			A2($elm$virtual_dom$VirtualDom$attribute, key, value),
-			_List_Nil,
-			'');
-	});
 var $rtfeldman$elm_css$Html$Styled$Attributes$size = function (n) {
 	return A2(
 		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
@@ -8171,32 +8214,6 @@ var $rtfeldman$elm_css$Css$Internal$getOverloadedProperty = F3(
 		}
 	});
 var $rtfeldman$elm_css$Css$Internal$IncompatibleUnits = {$: 'IncompatibleUnits'};
-var $rtfeldman$elm_css$Css$Structure$Compatible = {$: 'Compatible'};
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $rtfeldman$elm_css$Css$Internal$lengthConverter = F3(
-	function (units, unitLabel, numericValue) {
-		return {
-			absoluteLength: $rtfeldman$elm_css$Css$Structure$Compatible,
-			calc: $rtfeldman$elm_css$Css$Structure$Compatible,
-			flexBasis: $rtfeldman$elm_css$Css$Structure$Compatible,
-			fontSize: $rtfeldman$elm_css$Css$Structure$Compatible,
-			length: $rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrAutoOrCoverOrContain: $rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrNone: $rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrNoneOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible,
-			lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible,
-			numericValue: numericValue,
-			textIndent: $rtfeldman$elm_css$Css$Structure$Compatible,
-			unitLabel: unitLabel,
-			units: units,
-			value: _Utils_ap(
-				$elm$core$String$fromFloat(numericValue),
-				unitLabel)
-		};
-	});
 var $rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty = A3($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$Internal$IncompatibleUnits, '', 0);
 var $rtfeldman$elm_css$Css$textAlign = function (fn) {
 	return A3(
@@ -8695,11 +8712,9 @@ var $author$project$Tactics$DartboardMsg = function (a) {
 };
 var $author$project$Tactics$UndoMsg = {$: 'UndoMsg'};
 var $rtfeldman$elm_css$Css$absolute = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'absolute'};
-var $rtfeldman$elm_css$Css$auto = {alignItemsOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, cursor: $rtfeldman$elm_css$Css$Structure$Compatible, flexBasis: $rtfeldman$elm_css$Css$Structure$Compatible, intOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, justifyContentOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible, overflow: $rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: $rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: $rtfeldman$elm_css$Css$Structure$Compatible, textRendering: $rtfeldman$elm_css$Css$Structure$Compatible, touchAction: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'auto'};
 var $rtfeldman$elm_css$Css$backgroundColor = function (c) {
 	return A2($rtfeldman$elm_css$Css$property, 'background-color', c.value);
 };
-var $rtfeldman$elm_css$Html$Styled$br = $rtfeldman$elm_css$Html$Styled$node('br');
 var $author$project$Dartboard$Bull = {$: 'Bull'};
 var $author$project$Dartboard$DBull = {$: 'DBull'};
 var $author$project$Dartboard$N = {$: 'N'};
@@ -8746,8 +8761,6 @@ var $elm$core$Basics$fromPolar = function (_v0) {
 		radius * $elm$core$Basics$cos(theta),
 		radius * $elm$core$Basics$sin(theta));
 };
-var $rtfeldman$elm_css$Css$PxUnits = {$: 'PxUnits'};
-var $rtfeldman$elm_css$Css$px = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PxUnits, 'px');
 var $rtfeldman$elm_css$Svg$Styled$text = $rtfeldman$elm_css$VirtualDom$Styled$text;
 var $rtfeldman$elm_css$Svg$Styled$text_ = $rtfeldman$elm_css$Svg$Styled$node('text');
 var $rtfeldman$elm_css$Svg$Styled$Attributes$x = $rtfeldman$elm_css$VirtualDom$Styled$attribute('x');
@@ -9199,6 +9212,8 @@ var $author$project$Dartboard$dartboard = F2(
 										$author$project$Dartboard$segments))))))
 				]));
 	});
+var $rtfeldman$elm_css$Css$EmUnits = {$: 'EmUnits'};
+var $rtfeldman$elm_css$Css$em = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$EmUnits, 'em');
 var $rtfeldman$elm_css$Css$float = function (fn) {
 	return A3(
 		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
@@ -9207,7 +9222,6 @@ var $rtfeldman$elm_css$Css$float = function (fn) {
 		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
 };
 var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
-var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
 var $elm$core$Array$getHelp = F3(
 	function (shift, index, tree) {
@@ -9379,22 +9393,10 @@ var $rtfeldman$elm_css$VirtualDom$Styled$map = F2(
 	});
 var $rtfeldman$elm_css$Html$Styled$map = $rtfeldman$elm_css$VirtualDom$Styled$map;
 var $rtfeldman$elm_css$Css$margin = $rtfeldman$elm_css$Css$prop1('margin');
-var $rtfeldman$elm_css$Css$prop2 = F3(
-	function (key, argA, argB) {
-		return A2(
-			$rtfeldman$elm_css$Css$property,
-			key,
-			A2(
-				$elm$core$String$join,
-				' ',
-				_List_fromArray(
-					[argA.value, argB.value])));
-	});
-var $rtfeldman$elm_css$Css$margin2 = $rtfeldman$elm_css$Css$prop2('margin');
 var $rtfeldman$elm_css$Css$marginBottom = $rtfeldman$elm_css$Css$prop1('margin-bottom');
+var $rtfeldman$elm_css$Css$marginRight = $rtfeldman$elm_css$Css$prop1('margin-right');
 var $rtfeldman$elm_css$Css$marginTop = $rtfeldman$elm_css$Css$prop1('margin-top');
-var $rtfeldman$elm_css$Css$PercentageUnits = {$: 'PercentageUnits'};
-var $rtfeldman$elm_css$Css$pct = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PercentageUnits, '%');
+var $rtfeldman$elm_css$Css$maxWidth = $rtfeldman$elm_css$Css$prop1('max-width');
 var $rtfeldman$elm_css$Css$position = $rtfeldman$elm_css$Css$prop1('position');
 var $rtfeldman$elm_css$Css$PtUnits = {$: 'PtUnits'};
 var $rtfeldman$elm_css$Css$pt = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PtUnits, 'pt');
@@ -9428,6 +9430,7 @@ var $rtfeldman$elm_css$Html$Styled$Attributes$src = function (url) {
 };
 var $rtfeldman$elm_css$Html$Styled$table = $rtfeldman$elm_css$Html$Styled$node('table');
 var $rtfeldman$elm_css$Css$lineThrough = {textDecorationLine: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'line-through'};
+var $rtfeldman$elm_css$Css$minWidth = $rtfeldman$elm_css$Css$prop1('min-width');
 var $rtfeldman$elm_css$Html$Styled$td = $rtfeldman$elm_css$Html$Styled$node('td');
 var $rtfeldman$elm_css$Css$textDecoration = $rtfeldman$elm_css$Css$prop1('text-decoration');
 var $rtfeldman$elm_css$Html$Styled$tr = $rtfeldman$elm_css$Html$Styled$node('tr');
@@ -9456,7 +9459,15 @@ var $author$project$Tactics$tableRow = F2(
 				[
 					A2(
 					$rtfeldman$elm_css$Html$Styled$td,
-					_List_Nil,
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$Attributes$css(
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Css$minWidth(
+									$rtfeldman$elm_css$Css$em(6))
+								]))
+						]),
 					A2(
 						$elm$core$List$repeat,
 						3 - ca,
@@ -9470,7 +9481,15 @@ var $author$project$Tactics$tableRow = F2(
 						])),
 					A2(
 					$rtfeldman$elm_css$Html$Styled$td,
-					_List_Nil,
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$Attributes$css(
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Css$minWidth(
+									$rtfeldman$elm_css$Css$em(6))
+								]))
+						]),
 					A2(
 						$elm$core$List$repeat,
 						3 - cb,
@@ -9684,7 +9703,7 @@ var $author$project$Tactics$view = function (s) {
 									A2(
 									$rtfeldman$elm_css$Html$Styled$map,
 									$author$project$Tactics$DartboardMsg,
-									A2($author$project$Dartboard$dartboard, 500, _List_Nil)),
+									A2($author$project$Dartboard$dartboard, 600, _List_Nil)),
 									A2(
 									$rtfeldman$elm_css$Html$Styled$div,
 									_List_fromArray(
@@ -9695,9 +9714,9 @@ var $author$project$Tactics$view = function (s) {
 													[
 														$rtfeldman$elm_css$Css$backgroundColor($rtfeldman$elm_css$Css$transparent),
 														$rtfeldman$elm_css$Css$width(
-														$rtfeldman$elm_css$Css$px(500)),
+														$rtfeldman$elm_css$Css$px(600)),
 														$rtfeldman$elm_css$Css$height(
-														$rtfeldman$elm_css$Css$px(500)),
+														$rtfeldman$elm_css$Css$px(600)),
 														$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$absolute),
 														$rtfeldman$elm_css$Css$top(
 														$rtfeldman$elm_css$Css$px(0)),
@@ -9725,7 +9744,7 @@ var $author$project$Tactics$view = function (s) {
 															A4($rtfeldman$elm_css$Css$rgba, 255, 255, 255, 0.8)),
 															A2(
 															$rtfeldman$elm_css$Css$margin2,
-															$rtfeldman$elm_css$Css$px(150),
+															$rtfeldman$elm_css$Css$px(200),
 															$rtfeldman$elm_css$Css$auto),
 															$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center)
 														]))
@@ -9788,10 +9807,10 @@ var $author$project$Tactics$view = function (s) {
 									_List_fromArray(
 										[
 											$rtfeldman$elm_css$Css$float($rtfeldman$elm_css$Css$left),
-											$rtfeldman$elm_css$Css$width(
-											$rtfeldman$elm_css$Css$pct(15)),
 											$rtfeldman$elm_css$Css$marginTop(
 											$rtfeldman$elm_css$Css$px(100)),
+											$rtfeldman$elm_css$Css$marginRight(
+											$rtfeldman$elm_css$Css$px(20)),
 											$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center)
 										]))
 								]),
@@ -9823,7 +9842,7 @@ var $author$project$Tactics$view = function (s) {
 											$rtfeldman$elm_css$Html$Styled$img,
 											_List_fromArray(
 												[
-													$rtfeldman$elm_css$Html$Styled$Attributes$src('assets/dart.svg'),
+													$rtfeldman$elm_css$Html$Styled$Attributes$src('dart.svg'),
 													$rtfeldman$elm_css$Html$Styled$Attributes$width(20),
 													$rtfeldman$elm_css$Html$Styled$Attributes$css(
 													_List_fromArray(
@@ -9908,9 +9927,7 @@ var $author$project$Tactics$view = function (s) {
 									$rtfeldman$elm_css$Html$Styled$Attributes$css(
 									_List_fromArray(
 										[
-											$rtfeldman$elm_css$Css$float($rtfeldman$elm_css$Css$left),
-											$rtfeldman$elm_css$Css$width(
-											$rtfeldman$elm_css$Css$pct(50))
+											$rtfeldman$elm_css$Css$float($rtfeldman$elm_css$Css$left)
 										]))
 								]),
 							_List_fromArray(
@@ -9937,7 +9954,15 @@ var $author$project$Tactics$view = function (s) {
 													[
 														A2(
 														$rtfeldman$elm_css$Html$Styled$th,
-														_List_Nil,
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Html$Styled$Attributes$css(
+																_List_fromArray(
+																	[
+																		$rtfeldman$elm_css$Css$maxWidth(
+																		$rtfeldman$elm_css$Css$em(15))
+																	]))
+															]),
 														_List_fromArray(
 															[
 																$rtfeldman$elm_css$Html$Styled$text(teamA)
@@ -9945,7 +9970,15 @@ var $author$project$Tactics$view = function (s) {
 														A2($rtfeldman$elm_css$Html$Styled$th, _List_Nil, _List_Nil),
 														A2(
 														$rtfeldman$elm_css$Html$Styled$th,
-														_List_Nil,
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Html$Styled$Attributes$css(
+																_List_fromArray(
+																	[
+																		$rtfeldman$elm_css$Css$maxWidth(
+																		$rtfeldman$elm_css$Css$em(15))
+																	]))
+															]),
 														_List_fromArray(
 															[
 																$rtfeldman$elm_css$Html$Styled$text(teamB)
@@ -10069,14 +10102,25 @@ var $author$project$Main$view = function (s) {
 							])),
 						A2(
 						$rtfeldman$elm_css$Html$Styled$div,
-						_List_Nil,
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Html$Styled$Attributes$css(
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
+										A2(
+										$rtfeldman$elm_css$Css$margin2,
+										$rtfeldman$elm_css$Css$px(20),
+										$rtfeldman$elm_css$Css$auto)
+									]))
+							]),
 						_List_fromArray(
 							[
 								A2(
 								$rtfeldman$elm_css$Html$Styled$select,
 								_List_fromArray(
 									[
-										$rtfeldman$elm_css$Html$Styled$Attributes$size(2),
+										$rtfeldman$elm_css$Html$Styled$Attributes$size(5),
 										$rtfeldman$elm_css$Html$Styled$Attributes$name('Select Game')
 									]),
 								A2(
@@ -10088,22 +10132,34 @@ var $author$project$Main$view = function (s) {
 								_List_fromArray(
 									[
 										$rtfeldman$elm_css$Html$Styled$Events$onInput($author$project$Main$PlayersChange),
-										$rtfeldman$elm_css$Html$Styled$Attributes$placeholder('Enter players, one per row')
+										$rtfeldman$elm_css$Html$Styled$Attributes$placeholder('Enter players, one per row'),
+										$rtfeldman$elm_css$Html$Styled$Attributes$rows(6),
+										$rtfeldman$elm_css$Html$Styled$Attributes$cols(30)
 									]),
 								_List_fromArray(
 									[
 										$rtfeldman$elm_css$Html$Styled$text(players)
+									])),
+								A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+								A2(
+								$rtfeldman$elm_css$Html$Styled$button,
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$Main$GameStart),
+										$rtfeldman$elm_css$Html$Styled$Attributes$css(
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
+												A2(
+												$rtfeldman$elm_css$Css$margin2,
+												$rtfeldman$elm_css$Css$px(20),
+												$rtfeldman$elm_css$Css$auto)
+											]))
+									]),
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Html$Styled$text('Start Game')
 									]))
-							])),
-						A2(
-						$rtfeldman$elm_css$Html$Styled$button,
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$Main$GameStart)
-							]),
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$text('Start Game')
 							]))
 					])),
 			title: 'Darts Scoreboard'
@@ -10123,21 +10179,3 @@ var $author$project$Main$main = $elm$browser$Browser$document(
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));
-
-  var app = Elm.Main.init({ node: document.getElementById("elm") });
-}
-catch (e)
-{
-  // display initialization errors (e.g. bad flags, infinite recursion)
-  var header = document.createElement("h1");
-  header.style.fontFamily = "monospace";
-  header.innerText = "Initialization Error";
-  var pre = document.getElementById("elm");
-  document.body.insertBefore(header, pre);
-  pre.innerText = e;
-  throw e;
-}
-</script>
-
-</body>
-</html>

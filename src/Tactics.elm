@@ -639,7 +639,7 @@ view s =
                     ([ span [ css [ Css.fontSize <| pt 20 ] ] [ text currentPlayer ]
                      , br [] []
                      ]
-                        ++ (List.repeat s.currentDarts <| S.img [ src "assets/dart.svg", width 20, css [ Css.margin <| px 2 ] ] [])
+                        ++ (List.repeat s.currentDarts <| S.img [ src "dart.svg", width 20, css [ Css.margin <| px 2 ] ] [])
                         ++ [ br [] []
                            , span [ css [ Css.fontSize <| pt 50 ] ] [ text "↓" ]
                            , br [] []
