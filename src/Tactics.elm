@@ -662,9 +662,9 @@ view s =
                                 tableSeparator
                                 (List.map (tableRow s) tableRows
                                     ++ [ tr []
-                                            [ td [] [ text <| String.fromInt s.teamAPoints ]
+                                            [ td [ css [ Css.fontSize <| pt 30 ] ] [ text <| String.fromInt s.teamAPoints ]
                                             , td [] [ text "Points" ]
-                                            , td [] [ text <| String.fromInt s.teamBPoints ]
+                                            , td [ css [ Css.fontSize <| pt 30 ] ] [ text <| String.fromInt s.teamBPoints ]
                                             ]
                                        , tr []
                                             [ td [ css [ Css.fontSize <| pt 40 ] ] [ text victory_a ]

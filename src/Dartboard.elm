@@ -22,9 +22,11 @@ dartboard : Int -> List (Attribute Dartboard) -> Html Dartboard
 dartboard size attr =
     div attr
         [ svg [ width (String.fromInt size), height (String.fromInt size), viewBox "-150 -150 300 300", css [ Css.pointerEventsFill ] ]
-            (circle [ cx "0", cy "0", r "130", fill "black", onClick N ] []
-                :: List.map label segments
-                ++ List.map (\n -> segment 0 0 100 False n []) segments
+            (g [ onClick N ]
+                (circle [ cx "0", cy "0", r "130", fill "black" ] []
+                    :: List.map label segments
+                )
+                :: List.map (\n -> segment 0 0 100 False n []) segments
                 ++ [ circle [ cx "0", cy "0", r "15", fill "green", stroke "grey", strokeWidth "1", onClick Bull, css [ hover [ transform (scale 1.1) ] ] ] []
                    , circle [ cx "0", cy "0", r "7", fill "red", stroke "grey", strokeWidth "1", onClick DBull, css [ hover [ transform (scale 1.15) ] ] ] []
                    ]
@@ -52,7 +54,7 @@ label ( pos, num ) =
         cy =
             yy + h / 2.5
     in
-    text_ [ x <| String.fromFloat cx, y <| String.fromFloat cy, fill "white", css [ fontSize <| px h ] ] [ text <| String.fromInt num ]
+    text_ [ x <| String.fromFloat cx, y <| String.fromFloat cy, fill "white", css [ fontSize <| px h, Css.fontFamily Css.sansSerif ] ] [ text <| String.fromInt num ]
 
 
 segment : Float -> Float -> Float -> Bool -> ( Int, Int ) -> List (Attribute Dartboard) -> Svg Dartboard

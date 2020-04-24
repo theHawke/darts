@@ -8734,6 +8734,7 @@ var $rtfeldman$elm_css$Svg$Styled$Attributes$css = $rtfeldman$elm_css$Svg$Styled
 var $rtfeldman$elm_css$Svg$Styled$Attributes$cx = $rtfeldman$elm_css$VirtualDom$Styled$attribute('cx');
 var $rtfeldman$elm_css$Svg$Styled$Attributes$cy = $rtfeldman$elm_css$VirtualDom$Styled$attribute('cy');
 var $rtfeldman$elm_css$Svg$Styled$Attributes$fill = $rtfeldman$elm_css$VirtualDom$Styled$attribute('fill');
+var $rtfeldman$elm_css$Svg$Styled$g = $rtfeldman$elm_css$Svg$Styled$node('g');
 var $rtfeldman$elm_css$Svg$Styled$Attributes$height = $rtfeldman$elm_css$VirtualDom$Styled$attribute('height');
 var $rtfeldman$elm_css$Css$Preprocess$ExtendSelector = F2(
 	function (a, b) {
@@ -8751,6 +8752,7 @@ var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$degrees = function (angleInDegrees) {
 	return (angleInDegrees * $elm$core$Basics$pi) / 180;
 };
+var $rtfeldman$elm_css$Css$fontFamily = $rtfeldman$elm_css$Css$prop1('font-family');
 var $rtfeldman$elm_css$Css$fontSize = $rtfeldman$elm_css$Css$prop1('font-size');
 var $elm$core$Basics$cos = _Basics_cos;
 var $elm$core$Basics$sin = _Basics_sin;
@@ -8761,6 +8763,7 @@ var $elm$core$Basics$fromPolar = function (_v0) {
 		radius * $elm$core$Basics$cos(theta),
 		radius * $elm$core$Basics$sin(theta));
 };
+var $rtfeldman$elm_css$Css$sansSerif = {fontFamily: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'sans-serif'};
 var $rtfeldman$elm_css$Svg$Styled$text = $rtfeldman$elm_css$VirtualDom$Styled$text;
 var $rtfeldman$elm_css$Svg$Styled$text_ = $rtfeldman$elm_css$Svg$Styled$node('text');
 var $rtfeldman$elm_css$Svg$Styled$Attributes$x = $rtfeldman$elm_css$VirtualDom$Styled$attribute('x');
@@ -8790,7 +8793,8 @@ var $author$project$Dartboard$label = function (_v0) {
 				_List_fromArray(
 					[
 						$rtfeldman$elm_css$Css$fontSize(
-						$rtfeldman$elm_css$Css$px(h))
+						$rtfeldman$elm_css$Css$px(h)),
+						$rtfeldman$elm_css$Css$fontFamily($rtfeldman$elm_css$Css$sansSerif)
 					]))
 			]),
 		_List_fromArray(
@@ -8975,7 +8979,6 @@ var $author$project$Util$even = A2(
 	$elm$core$Basics$composeR,
 	$elm$core$Basics$modBy(2),
 	$elm$core$Basics$eq(0));
-var $rtfeldman$elm_css$Svg$Styled$g = $rtfeldman$elm_css$Svg$Styled$node('g');
 var $rtfeldman$elm_css$Css$UnitlessInteger = {$: 'UnitlessInteger'};
 var $rtfeldman$elm_css$Css$int = function (val) {
 	return {
@@ -9135,81 +9138,87 @@ var $author$project$Dartboard$dartboard = F2(
 					A2(
 						$elm$core$List$cons,
 						A2(
-							$rtfeldman$elm_css$Svg$Styled$circle,
+							$rtfeldman$elm_css$Svg$Styled$g,
 							_List_fromArray(
 								[
-									$rtfeldman$elm_css$Svg$Styled$Attributes$cx('0'),
-									$rtfeldman$elm_css$Svg$Styled$Attributes$cy('0'),
-									$rtfeldman$elm_css$Svg$Styled$Attributes$r('130'),
-									$rtfeldman$elm_css$Svg$Styled$Attributes$fill('black'),
 									$rtfeldman$elm_css$Svg$Styled$Events$onClick($author$project$Dartboard$N)
 								]),
-							_List_Nil),
+							A2(
+								$elm$core$List$cons,
+								A2(
+									$rtfeldman$elm_css$Svg$Styled$circle,
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Svg$Styled$Attributes$cx('0'),
+											$rtfeldman$elm_css$Svg$Styled$Attributes$cy('0'),
+											$rtfeldman$elm_css$Svg$Styled$Attributes$r('130'),
+											$rtfeldman$elm_css$Svg$Styled$Attributes$fill('black')
+										]),
+									_List_Nil),
+								A2($elm$core$List$map, $author$project$Dartboard$label, $author$project$Dartboard$segments))),
 						_Utils_ap(
-							A2($elm$core$List$map, $author$project$Dartboard$label, $author$project$Dartboard$segments),
+							A2(
+								$elm$core$List$map,
+								function (n) {
+									return A6($author$project$Dartboard$segment, 0, 0, 100, false, n, _List_Nil);
+								},
+								$author$project$Dartboard$segments),
 							_Utils_ap(
+								_List_fromArray(
+									[
+										A2(
+										$rtfeldman$elm_css$Svg$Styled$circle,
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Svg$Styled$Attributes$cx('0'),
+												$rtfeldman$elm_css$Svg$Styled$Attributes$cy('0'),
+												$rtfeldman$elm_css$Svg$Styled$Attributes$r('15'),
+												$rtfeldman$elm_css$Svg$Styled$Attributes$fill('green'),
+												$rtfeldman$elm_css$Svg$Styled$Attributes$stroke('grey'),
+												$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth('1'),
+												$rtfeldman$elm_css$Svg$Styled$Events$onClick($author$project$Dartboard$Bull),
+												$rtfeldman$elm_css$Svg$Styled$Attributes$css(
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Css$hover(
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Css$transform(
+																$rtfeldman$elm_css$Css$scale(1.1))
+															]))
+													]))
+											]),
+										_List_Nil),
+										A2(
+										$rtfeldman$elm_css$Svg$Styled$circle,
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Svg$Styled$Attributes$cx('0'),
+												$rtfeldman$elm_css$Svg$Styled$Attributes$cy('0'),
+												$rtfeldman$elm_css$Svg$Styled$Attributes$r('7'),
+												$rtfeldman$elm_css$Svg$Styled$Attributes$fill('red'),
+												$rtfeldman$elm_css$Svg$Styled$Attributes$stroke('grey'),
+												$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth('1'),
+												$rtfeldman$elm_css$Svg$Styled$Events$onClick($author$project$Dartboard$DBull),
+												$rtfeldman$elm_css$Svg$Styled$Attributes$css(
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Css$hover(
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Css$transform(
+																$rtfeldman$elm_css$Css$scale(1.15))
+															]))
+													]))
+											]),
+										_List_Nil)
+									]),
 								A2(
 									$elm$core$List$map,
 									function (n) {
-										return A6($author$project$Dartboard$segment, 0, 0, 100, false, n, _List_Nil);
+										return A6($author$project$Dartboard$segment, 0, 0, 100, true, n, _List_Nil);
 									},
-									$author$project$Dartboard$segments),
-								_Utils_ap(
-									_List_fromArray(
-										[
-											A2(
-											$rtfeldman$elm_css$Svg$Styled$circle,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Svg$Styled$Attributes$cx('0'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$cy('0'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$r('15'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$fill('green'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$stroke('grey'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth('1'),
-													$rtfeldman$elm_css$Svg$Styled$Events$onClick($author$project$Dartboard$Bull),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$css(
-													_List_fromArray(
-														[
-															$rtfeldman$elm_css$Css$hover(
-															_List_fromArray(
-																[
-																	$rtfeldman$elm_css$Css$transform(
-																	$rtfeldman$elm_css$Css$scale(1.1))
-																]))
-														]))
-												]),
-											_List_Nil),
-											A2(
-											$rtfeldman$elm_css$Svg$Styled$circle,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Svg$Styled$Attributes$cx('0'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$cy('0'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$r('7'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$fill('red'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$stroke('grey'),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$strokeWidth('1'),
-													$rtfeldman$elm_css$Svg$Styled$Events$onClick($author$project$Dartboard$DBull),
-													$rtfeldman$elm_css$Svg$Styled$Attributes$css(
-													_List_fromArray(
-														[
-															$rtfeldman$elm_css$Css$hover(
-															_List_fromArray(
-																[
-																	$rtfeldman$elm_css$Css$transform(
-																	$rtfeldman$elm_css$Css$scale(1.15))
-																]))
-														]))
-												]),
-											_List_Nil)
-										]),
-									A2(
-										$elm$core$List$map,
-										function (n) {
-											return A6($author$project$Dartboard$segment, 0, 0, 100, true, n, _List_Nil);
-										},
-										$author$project$Dartboard$segments))))))
+									$author$project$Dartboard$segments)))))
 				]));
 	});
 var $rtfeldman$elm_css$Css$EmUnits = {$: 'EmUnits'};
@@ -10004,7 +10013,15 @@ var $author$project$Tactics$view = function (s) {
 															[
 																A2(
 																$rtfeldman$elm_css$Html$Styled$td,
-																_List_Nil,
+																_List_fromArray(
+																	[
+																		$rtfeldman$elm_css$Html$Styled$Attributes$css(
+																		_List_fromArray(
+																			[
+																				$rtfeldman$elm_css$Css$fontSize(
+																				$rtfeldman$elm_css$Css$pt(30))
+																			]))
+																	]),
 																_List_fromArray(
 																	[
 																		$rtfeldman$elm_css$Html$Styled$text(
@@ -10019,7 +10036,15 @@ var $author$project$Tactics$view = function (s) {
 																	])),
 																A2(
 																$rtfeldman$elm_css$Html$Styled$td,
-																_List_Nil,
+																_List_fromArray(
+																	[
+																		$rtfeldman$elm_css$Html$Styled$Attributes$css(
+																		_List_fromArray(
+																			[
+																				$rtfeldman$elm_css$Css$fontSize(
+																				$rtfeldman$elm_css$Css$pt(30))
+																			]))
+																	]),
 																_List_fromArray(
 																	[
 																		$rtfeldman$elm_css$Html$Styled$text(
