@@ -14,7 +14,7 @@ even =
 modByF :
     Float
     -> Float
-    -> Float -- floating ponit version of modBy
+    -> Float -- floating point version of modBy
 modByF x mod =
     x - mod * (toFloat <| floor <| x / mod)
 

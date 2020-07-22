@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser exposing (Document)
 import Css
+import D501
 import Html
 import Html.Styled as S exposing (button, div, h1, option, select, text, textarea, toUnstyled)
 import Html.Styled.Attributes as A exposing (css)
@@ -23,6 +24,7 @@ main =
 type State
     = GameSelect String String
     | TacticsState Tactics.State
+    | D501State D501.State
 
 
 type Msg
@@ -30,6 +32,7 @@ type Msg
     | SelectChange String
     | GameStart
     | TacticsMsg Tactics.Msg
+    | D501Msg D501.Msg
 
 
 initState : State
@@ -39,7 +42,9 @@ initState =
 
 games : List String
 games =
-    [ "Tactics" ]
+    [ "Tactics"
+    , "501"
+    ]
 
 
 update : Msg -> State -> ( State, C.Cmd a )
@@ -51,6 +56,13 @@ update m s =
 
             else
                 ( TacticsState <| Tactics.update tm ts, C.none )
+
+        ( D501Msg fm, D501State fs ) ->
+            if D501.isExitMsg fm then
+                ( initState, C.none )
+
+            else
+                ( D501State <| D501.update fm fs, C.none )
 
         ( gsm, GameSelect sel players ) ->
             case gsm of
@@ -64,6 +76,9 @@ update m s =
                     case sel of
                         "Tactics" ->
                             ( TacticsState <| Tactics.makeInitState <| List.filter (\str -> not <| String.isEmpty str) <| String.split "\n" players, C.none )
+
+                        "501" ->
+                            ( D501State <| D501.makeInitState <| List.filter (\str -> not <| String.isEmpty str) <| String.split "\n" players, C.none )
 
                         _ ->
                             ( s, C.none )
@@ -85,6 +100,9 @@ view s =
     case s of
         TacticsState ts ->
             mapDocument TacticsMsg <| Tactics.view ts
+
+        D501State fs ->
+            mapDocument D501Msg <| D501.view fs
 
         GameSelect sel players ->
             { title = "Darts Scoreboard"
