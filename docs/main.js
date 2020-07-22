@@ -5190,6 +5190,9 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Main$D501State = function (a) {
+	return {$: 'D501State', a: a};
+};
 var $author$project$Main$TacticsState = function (a) {
 	return {$: 'TacticsState', a: a};
 };
@@ -5204,11 +5207,14 @@ var $elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
+var $author$project$D501$ExitMsg = {$: 'ExitMsg'};
+var $author$project$D501$isExitMsg = function (m) {
+	return _Utils_eq(m, $author$project$D501$ExitMsg);
+};
 var $author$project$Tactics$ExitMsg = {$: 'ExitMsg'};
 var $author$project$Tactics$isExitMsg = function (m) {
 	return _Utils_eq(m, $author$project$Tactics$ExitMsg);
 };
-var $author$project$Tactics$A = {$: 'A'};
 var $elm$core$Array$fromListHelp = F3(
 	function (list, nodeList, nodeListSize) {
 		fromListHelp:
@@ -5388,6 +5394,27 @@ var $elm$core$List$repeat = F2(
 	function (n, value) {
 		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
 	});
+var $author$project$Util$zip = $elm$core$List$map2(
+	F2(
+		function (a, b) {
+			return _Utils_Tuple2(a, b);
+		}));
+var $author$project$D501$makeInitState = function (players) {
+	var numPlayers = $elm$core$List$length(players);
+	var initPoints = A2(
+		$author$project$Util$zip,
+		A2($elm$core$List$range, 0, numPlayers - 1),
+		A2($elm$core$List$repeat, numPlayers, _List_Nil));
+	return {
+		currentDarts: 3,
+		currentPlayer: 0,
+		currentPoints: 0,
+		history: _List_Nil,
+		playerNames: $elm$core$Array$fromList(players),
+		playerPoints: $elm$core$Dict$fromList(initPoints)
+	};
+};
+var $author$project$Tactics$A = {$: 'A'};
 var $author$project$Util$unzipAlternate = function (l) {
 	var helper = F3(
 		function (ll, la, lb) {
@@ -5425,11 +5452,6 @@ var $author$project$Util$unzipAlternate = function (l) {
 		});
 	return A3(helper, l, _List_Nil, _List_Nil);
 };
-var $author$project$Util$zip = $elm$core$List$map2(
-	F2(
-		function (a, b) {
-			return _Utils_Tuple2(a, b);
-		}));
 var $author$project$Tactics$makeInitState = function (players) {
 	var _v0 = $author$project$Util$unzipAlternate(players);
 	var players_a = _v0.a;
@@ -5457,6 +5479,20 @@ var $author$project$Tactics$makeInitState = function (players) {
 	};
 };
 var $elm$core$Basics$not = _Basics_not;
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -5488,38 +5524,6 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
-var $elm$core$Dict$member = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$get, key, dict);
-		if (_v0.$ === 'Just') {
-			return true;
-		} else {
-			return false;
-		}
-	});
-var $author$project$Tactics$B = {$: 'B'};
-var $author$project$Tactics$Undecided = {$: 'Undecided'};
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $elm$core$Array$length = function (_v0) {
-	var len = _v0.a;
-	return len;
-};
-var $elm$core$Basics$modBy = _Basics_modBy;
-var $author$project$Tactics$otherTeam = function (t) {
-	if (t.$ === 'A') {
-		return $author$project$Tactics$B;
-	} else {
-		return $author$project$Tactics$A;
-	}
-};
 var $elm$core$Dict$getMin = function (dict) {
 	getMin:
 	while (true) {
@@ -5893,6 +5897,200 @@ var $elm$core$Dict$update = F3(
 			return A2($elm$core$Dict$remove, targetKey, dictionary);
 		}
 	});
+var $author$project$D501$addPlayerPoints = F3(
+	function (player, table, points) {
+		return A3(
+			$elm$core$Dict$update,
+			player,
+			$elm$core$Maybe$andThen(
+				A2(
+					$elm$core$Basics$composeR,
+					$elm$core$List$cons(points),
+					$elm$core$Maybe$Just)),
+			table);
+	});
+var $author$project$D501$dartboardValue = function (d) {
+	switch (d.$) {
+		case 'Bull':
+			return 25;
+		case 'DBull':
+			return 50;
+		case 'G':
+			var n = d.a;
+			return n;
+		case 'K':
+			var n = d.a;
+			return n;
+		case 'D':
+			var n = d.a;
+			return 2 * n;
+		case 'T':
+			var n = d.a;
+			return 3 * n;
+		default:
+			return 0;
+	}
+};
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$D501$getPlayerPoints = F2(
+	function (p, t) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			501,
+			A2(
+				$elm$core$Maybe$andThen,
+				$elm$core$List$head,
+				A2($elm$core$Dict$get, p, t)));
+	});
+var $author$project$D501$isDouble = function (d) {
+	switch (d.$) {
+		case 'DBull':
+			return true;
+		case 'D':
+			return true;
+		default:
+			return false;
+	}
+};
+var $elm$core$Array$length = function (_v0) {
+	var len = _v0.a;
+	return len;
+};
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $author$project$D501$dartThrowUpdate = F2(
+	function (d, s) {
+		var oldPlayerPoints = A2($author$project$D501$getPlayerPoints, s.currentPlayer, s.playerPoints);
+		var newCurrentPoints = s.currentPoints + $author$project$D501$dartboardValue(d);
+		var newPlayerPoints = oldPlayerPoints - newCurrentPoints;
+		var turnInvalid = (newPlayerPoints < 0) || ((newPlayerPoints === 1) || ((!newPlayerPoints) && (!$author$project$D501$isDouble(d))));
+		var playerPointsUpdate = A3(
+			$author$project$D501$addPlayerPoints,
+			s.currentPlayer,
+			s.playerPoints,
+			turnInvalid ? oldPlayerPoints : newPlayerPoints);
+		var turnFinished = (s.currentDarts === 1) || (turnInvalid || (!newPlayerPoints));
+		var historyEntry = {darts: s.currentDarts, player: s.currentPlayer, points: s.currentPoints, turn: turnFinished};
+		var findNextPlayer = function (p) {
+			findNextPlayer:
+			while (true) {
+				var nextCandidate = A2(
+					$elm$core$Basics$modBy,
+					$elm$core$Array$length(s.playerNames),
+					p + 1);
+				var finished = !A2($author$project$D501$getPlayerPoints, nextCandidate, s.playerPoints);
+				if ((!finished) || _Utils_eq(nextCandidate, s.currentPlayer)) {
+					return nextCandidate;
+				} else {
+					var $temp$p = nextCandidate;
+					p = $temp$p;
+					continue findNextPlayer;
+				}
+			}
+		};
+		var nextPlayer = findNextPlayer(s.currentPlayer);
+		return turnFinished ? _Utils_update(
+			s,
+			{
+				currentDarts: 3,
+				currentPlayer: nextPlayer,
+				currentPoints: 0,
+				history: A2($elm$core$List$cons, historyEntry, s.history),
+				playerPoints: playerPointsUpdate
+			}) : _Utils_update(
+			s,
+			{
+				currentDarts: s.currentDarts - 1,
+				currentPoints: newCurrentPoints,
+				history: A2($elm$core$List$cons, historyEntry, s.history)
+			});
+	});
+var $elm$core$List$tail = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(xs);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$D501$undoPlayerPoints = F2(
+	function (p, t) {
+		return A3(
+			$elm$core$Dict$update,
+			p,
+			$elm$core$Maybe$andThen($elm$core$List$tail),
+			t);
+	});
+var $author$project$D501$undoUpdate = function (s) {
+	var _v0 = s.history;
+	if (!_v0.b) {
+		return s;
+	} else {
+		var player = _v0.a.player;
+		var darts = _v0.a.darts;
+		var points = _v0.a.points;
+		var turn = _v0.a.turn;
+		var histRemainder = _v0.b;
+		return (!turn) ? _Utils_update(
+			s,
+			{currentDarts: darts, currentPoints: points, history: histRemainder}) : _Utils_update(
+			s,
+			{
+				currentDarts: darts,
+				currentPlayer: player,
+				currentPoints: points,
+				history: histRemainder,
+				playerPoints: A2($author$project$D501$undoPlayerPoints, player, s.playerPoints)
+			});
+	}
+};
+var $author$project$D501$update = F2(
+	function (msg, state) {
+		switch (msg.$) {
+			case 'UndoMsg':
+				return $author$project$D501$undoUpdate(state);
+			case 'DartboardMsg':
+				var dart = msg.a;
+				return A2($author$project$D501$dartThrowUpdate, dart, state);
+			default:
+				return state;
+		}
+	});
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $author$project$Tactics$B = {$: 'B'};
+var $author$project$Tactics$Undecided = {$: 'Undecided'};
+var $author$project$Tactics$otherTeam = function (t) {
+	if (t.$ === 'A') {
+		return $author$project$Tactics$B;
+	} else {
+		return $author$project$Tactics$A;
+	}
+};
 var $author$project$Tactics$Victory = function (a) {
 	return {$: 'Victory', a: a};
 };
@@ -6113,53 +6311,84 @@ var $author$project$Tactics$update = F2(
 var $author$project$Main$update = F2(
 	function (m, s) {
 		var _v0 = _Utils_Tuple2(m, s);
-		if (_v0.b.$ === 'TacticsState') {
-			if (_v0.a.$ === 'TacticsMsg') {
-				var tm = _v0.a.a;
-				var ts = _v0.b.a;
-				return $author$project$Tactics$isExitMsg(tm) ? _Utils_Tuple2($author$project$Main$initState, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
-					$author$project$Main$TacticsState(
-						A2($author$project$Tactics$update, tm, ts)),
-					$elm$core$Platform$Cmd$none);
-			} else {
-				return _Utils_Tuple2(s, $elm$core$Platform$Cmd$none);
-			}
-		} else {
-			var gsm = _v0.a;
-			var _v1 = _v0.b;
-			var sel = _v1.a;
-			var players = _v1.b;
-			switch (gsm.$) {
-				case 'PlayersChange':
-					var new_players = gsm.a;
-					return _Utils_Tuple2(
-						A2($author$project$Main$GameSelect, sel, new_players),
-						$elm$core$Platform$Cmd$none);
-				case 'SelectChange':
-					var new_sel = gsm.a;
-					return _Utils_Tuple2(
-						A2($author$project$Main$GameSelect, new_sel, players),
-						$elm$core$Platform$Cmd$none);
-				case 'GameStart':
-					if (sel === 'Tactics') {
-						return _Utils_Tuple2(
+		_v0$3:
+		while (true) {
+			switch (_v0.b.$) {
+				case 'TacticsState':
+					if (_v0.a.$ === 'TacticsMsg') {
+						var tm = _v0.a.a;
+						var ts = _v0.b.a;
+						return $author$project$Tactics$isExitMsg(tm) ? _Utils_Tuple2($author$project$Main$initState, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 							$author$project$Main$TacticsState(
-								$author$project$Tactics$makeInitState(
-									A2(
-										$elm$core$List$filter,
-										function (str) {
-											return !$elm$core$String$isEmpty(str);
-										},
-										A2($elm$core$String$split, '\n', players)))),
+								A2($author$project$Tactics$update, tm, ts)),
 							$elm$core$Platform$Cmd$none);
 					} else {
-						return _Utils_Tuple2(s, $elm$core$Platform$Cmd$none);
+						break _v0$3;
+					}
+				case 'D501State':
+					if (_v0.a.$ === 'D501Msg') {
+						var fm = _v0.a.a;
+						var fs = _v0.b.a;
+						return $author$project$D501$isExitMsg(fm) ? _Utils_Tuple2($author$project$Main$initState, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+							$author$project$Main$D501State(
+								A2($author$project$D501$update, fm, fs)),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						break _v0$3;
 					}
 				default:
-					return _Utils_Tuple2(s, $elm$core$Platform$Cmd$none);
+					var gsm = _v0.a;
+					var _v1 = _v0.b;
+					var sel = _v1.a;
+					var players = _v1.b;
+					switch (gsm.$) {
+						case 'PlayersChange':
+							var new_players = gsm.a;
+							return _Utils_Tuple2(
+								A2($author$project$Main$GameSelect, sel, new_players),
+								$elm$core$Platform$Cmd$none);
+						case 'SelectChange':
+							var new_sel = gsm.a;
+							return _Utils_Tuple2(
+								A2($author$project$Main$GameSelect, new_sel, players),
+								$elm$core$Platform$Cmd$none);
+						case 'GameStart':
+							switch (sel) {
+								case 'Tactics':
+									return _Utils_Tuple2(
+										$author$project$Main$TacticsState(
+											$author$project$Tactics$makeInitState(
+												A2(
+													$elm$core$List$filter,
+													function (str) {
+														return !$elm$core$String$isEmpty(str);
+													},
+													A2($elm$core$String$split, '\n', players)))),
+										$elm$core$Platform$Cmd$none);
+								case '501':
+									return _Utils_Tuple2(
+										$author$project$Main$D501State(
+											$author$project$D501$makeInitState(
+												A2(
+													$elm$core$List$filter,
+													function (str) {
+														return !$elm$core$String$isEmpty(str);
+													},
+													A2($elm$core$String$split, '\n', players)))),
+										$elm$core$Platform$Cmd$none);
+								default:
+									return _Utils_Tuple2(s, $elm$core$Platform$Cmd$none);
+							}
+						default:
+							return _Utils_Tuple2(s, $elm$core$Platform$Cmd$none);
+					}
 			}
 		}
+		return _Utils_Tuple2(s, $elm$core$Platform$Cmd$none);
 	});
+var $author$project$Main$D501Msg = function (a) {
+	return {$: 'D501Msg', a: a};
+};
 var $author$project$Main$GameStart = {$: 'GameStart'};
 var $author$project$Main$PlayersChange = function (a) {
 	return {$: 'PlayersChange', a: a};
@@ -6375,15 +6604,6 @@ var $elm$core$Maybe$map = F2(
 				f(value));
 		} else {
 			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
 		}
 	});
 var $rtfeldman$elm_css$Css$Structure$Output$charsetToString = function (charset) {
@@ -7233,15 +7453,6 @@ var $rtfeldman$elm_css$Hash$fromString = function (str) {
 		$rtfeldman$elm_hex$Hex$toString(
 			A2($Skinney$murmur3$Murmur3$hashString, $rtfeldman$elm_css$Hash$murmurSeed, str)));
 };
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $rtfeldman$elm_css$Css$Preprocess$Resolve$last = function (list) {
 	last:
 	while (true) {
@@ -7337,15 +7548,6 @@ var $rtfeldman$elm_css$Css$Structure$styleBlockToMediaRule = F2(
 			return declaration;
 		}
 	});
-var $elm$core$List$tail = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(xs);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
 		takeReverse:
@@ -7969,7 +8171,7 @@ var $rtfeldman$elm_css$Html$Styled$Internal$css = function (styles) {
 var $rtfeldman$elm_css$Html$Styled$Attributes$css = $rtfeldman$elm_css$Html$Styled$Internal$css;
 var $rtfeldman$elm_css$Html$Styled$div = $rtfeldman$elm_css$Html$Styled$node('div');
 var $author$project$Main$games = _List_fromArray(
-	['Tactics']);
+	['Tactics', '501']);
 var $rtfeldman$elm_css$Html$Styled$h1 = $rtfeldman$elm_css$Html$Styled$node('h1');
 var $author$project$Main$SelectChange = function (a) {
 	return {$: 'SelectChange', a: a};
@@ -8704,16 +8906,15 @@ var $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled = function (vdom) {
 	}
 };
 var $rtfeldman$elm_css$Html$Styled$toUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled;
-var $author$project$Tactics$ChoiceMsg = function (a) {
-	return {$: 'ChoiceMsg', a: a};
-};
-var $author$project$Tactics$DartboardMsg = function (a) {
+var $author$project$D501$DartboardMsg = function (a) {
 	return {$: 'DartboardMsg', a: a};
 };
-var $author$project$Tactics$UndoMsg = {$: 'UndoMsg'};
-var $rtfeldman$elm_css$Css$absolute = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'absolute'};
-var $rtfeldman$elm_css$Css$backgroundColor = function (c) {
-	return A2($rtfeldman$elm_css$Css$property, 'background-color', c.value);
+var $author$project$D501$UndoMsg = {$: 'UndoMsg'};
+var $rtfeldman$elm_css$Html$Styled$Attributes$colspan = function (n) {
+	return A2(
+		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
+		'colspan',
+		$elm$core$String$fromInt(n));
 };
 var $author$project$Dartboard$Bull = {$: 'Bull'};
 var $author$project$Dartboard$DBull = {$: 'DBull'};
@@ -8970,11 +9171,6 @@ var $author$project$Dartboard$circleArc = F8(
 				attr),
 			_List_Nil);
 	});
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var $author$project$Util$even = A2(
 	$elm$core$Basics$composeR,
 	$elm$core$Basics$modBy(2),
@@ -9221,8 +9417,6 @@ var $author$project$Dartboard$dartboard = F2(
 									$author$project$Dartboard$segments)))))
 				]));
 	});
-var $rtfeldman$elm_css$Css$EmUnits = {$: 'EmUnits'};
-var $rtfeldman$elm_css$Css$em = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$EmUnits, 'em');
 var $rtfeldman$elm_css$Css$float = function (fn) {
 	return A3(
 		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
@@ -9268,33 +9462,34 @@ var $elm$core$Array$get = F2(
 			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
 			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
-var $rtfeldman$elm_css$Css$height = $rtfeldman$elm_css$Css$prop1('height');
-var $rtfeldman$elm_css$Css$hidden = {borderStyle: $rtfeldman$elm_css$Css$Structure$Compatible, overflow: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'hidden', visibility: $rtfeldman$elm_css$Css$Structure$Compatible};
+var $rtfeldman$elm_css$Html$Styled$hr = $rtfeldman$elm_css$Html$Styled$node('hr');
 var $rtfeldman$elm_css$Html$Styled$img = $rtfeldman$elm_css$Html$Styled$node('img');
-var $author$project$Util$intersperseEvery = F3(
-	function (n, x, ls) {
-		var helper = F2(
-			function (m, l) {
-				if (!l.b) {
-					return _List_Nil;
-				} else {
-					var e = l.a;
-					var ll = l.b;
-					return (!m) ? A2(
-						$elm$core$List$cons,
-						x,
-						A2(
-							$elm$core$List$cons,
-							e,
-							A2(helper, n - 1, ll))) : A2(
-						$elm$core$List$cons,
-						e,
-						A2(helper, m - 1, ll));
-				}
-			});
-		return A2(helper, n, ls);
-	});
 var $rtfeldman$elm_css$Css$left = $rtfeldman$elm_css$Css$prop1('left');
+var $elm$core$Elm$JsArray$map = _JsArray_map;
+var $elm$core$Array$map = F2(
+	function (func, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var helper = function (node) {
+			if (node.$ === 'SubTree') {
+				var subTree = node.a;
+				return $elm$core$Array$SubTree(
+					A2($elm$core$Elm$JsArray$map, helper, subTree));
+			} else {
+				var values = node.a;
+				return $elm$core$Array$Leaf(
+					A2($elm$core$Elm$JsArray$map, func, values));
+			}
+		};
+		return A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A2($elm$core$Elm$JsArray$map, helper, tree),
+			A2($elm$core$Elm$JsArray$map, func, tail));
+	});
 var $rtfeldman$elm_css$VirtualDom$Styled$KeyedNode = F3(
 	function (a, b, c) {
 		return {$: 'KeyedNode', a: a, b: b, c: c};
@@ -9402,14 +9597,439 @@ var $rtfeldman$elm_css$VirtualDom$Styled$map = F2(
 	});
 var $rtfeldman$elm_css$Html$Styled$map = $rtfeldman$elm_css$VirtualDom$Styled$map;
 var $rtfeldman$elm_css$Css$margin = $rtfeldman$elm_css$Css$prop1('margin');
-var $rtfeldman$elm_css$Css$marginBottom = $rtfeldman$elm_css$Css$prop1('margin-bottom');
 var $rtfeldman$elm_css$Css$marginRight = $rtfeldman$elm_css$Css$prop1('margin-right');
 var $rtfeldman$elm_css$Css$marginTop = $rtfeldman$elm_css$Css$prop1('margin-top');
-var $rtfeldman$elm_css$Css$maxWidth = $rtfeldman$elm_css$Css$prop1('max-width');
+var $rtfeldman$elm_css$Css$padding = $rtfeldman$elm_css$Css$prop1('padding');
 var $rtfeldman$elm_css$Css$position = $rtfeldman$elm_css$Css$prop1('position');
+var $elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $rtfeldman$elm_css$Html$Styled$td = $rtfeldman$elm_css$Html$Styled$node('td');
+var $rtfeldman$elm_css$Html$Styled$tr = $rtfeldman$elm_css$Html$Styled$node('tr');
+var $author$project$D501$transposeWithDefault = F3(
+	function (length, _default, matrix) {
+		return (!length) ? _List_Nil : A2(
+			$elm$core$List$cons,
+			A2(
+				$elm$core$List$map,
+				A2(
+					$elm$core$Basics$composeR,
+					$elm$core$List$head,
+					$elm$core$Maybe$withDefault(_default)),
+				matrix),
+			A3(
+				$author$project$D501$transposeWithDefault,
+				length - 1,
+				_default,
+				A2(
+					$elm$core$List$map,
+					A2(
+						$elm$core$Basics$composeR,
+						$elm$core$List$tail,
+						$elm$core$Maybe$withDefault(_List_Nil)),
+					matrix)));
+	});
+var $author$project$D501$preparePointsTableRows = function (s) {
+	var players = A2(
+		$elm$core$List$range,
+		0,
+		$elm$core$Array$length(s.playerNames) - 1);
+	var pointsLists = A2(
+		$elm$core$List$map,
+		function (x) {
+			return A2(
+				$elm$core$List$map,
+				$elm$core$String$fromInt,
+				$elm$core$List$reverse(
+					A2(
+						$elm$core$Maybe$withDefault,
+						_List_Nil,
+						A2($elm$core$Dict$get, x, s.playerPoints))));
+		},
+		players);
+	var makeTD = function (string) {
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$td,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$text(string)
+				]));
+	};
+	var entries = A2($elm$core$List$map, $elm$core$List$length, pointsLists);
+	var rows = A2(
+		$elm$core$Basics$max,
+		10,
+		A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$maximum(entries)));
+	var rowStrings = A3($author$project$D501$transposeWithDefault, rows, '', pointsLists);
+	return A2(
+		$elm$core$List$map,
+		A2(
+			$elm$core$Basics$composeL,
+			$rtfeldman$elm_css$Html$Styled$tr(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Css$padding(
+								$rtfeldman$elm_css$Css$px(10))
+							]))
+					])),
+			$elm$core$List$map(makeTD)),
+		rowStrings);
+};
 var $rtfeldman$elm_css$Css$PtUnits = {$: 'PtUnits'};
 var $rtfeldman$elm_css$Css$pt = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PtUnits, 'pt');
 var $rtfeldman$elm_css$Css$relative = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'relative'};
+var $rtfeldman$elm_css$Html$Styled$span = $rtfeldman$elm_css$Html$Styled$node('span');
+var $rtfeldman$elm_css$Html$Styled$Attributes$src = function (url) {
+	return A2($rtfeldman$elm_css$Html$Styled$Attributes$stringProperty, 'src', url);
+};
+var $rtfeldman$elm_css$Html$Styled$table = $rtfeldman$elm_css$Html$Styled$node('table');
+var $rtfeldman$elm_css$Html$Styled$th = $rtfeldman$elm_css$Html$Styled$node('th');
+var $rtfeldman$elm_css$Html$Styled$Attributes$width = function (n) {
+	return A2(
+		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
+		'width',
+		$elm$core$String$fromInt(n));
+};
+var $author$project$D501$view = function (s) {
+	var findNextPlayer = function (p) {
+		findNextPlayer:
+		while (true) {
+			var nextCandidate = A2(
+				$elm$core$Basics$modBy,
+				$elm$core$Array$length(s.playerNames),
+				p + 1);
+			var finished = !A2($author$project$D501$getPlayerPoints, nextCandidate, s.playerPoints);
+			if ((!finished) || _Utils_eq(nextCandidate, s.currentPlayer)) {
+				return nextCandidate;
+			} else {
+				var $temp$p = nextCandidate;
+				p = $temp$p;
+				continue findNextPlayer;
+			}
+		}
+	};
+	var nextUp = A2(
+		$elm$core$Maybe$withDefault,
+		'',
+		A2(
+			$elm$core$Array$get,
+			findNextPlayer(s.currentPlayer),
+			s.playerNames));
+	var currentScore = $elm$core$String$fromInt(
+		A2($author$project$D501$getPlayerPoints, s.currentPlayer, s.playerPoints) - s.currentPoints);
+	var currentPlayer = A2(
+		$elm$core$Maybe$withDefault,
+		'',
+		A2($elm$core$Array$get, s.currentPlayer, s.playerNames));
+	return {
+		body: A2(
+			$elm$core$List$map,
+			$rtfeldman$elm_css$Html$Styled$toUnstyled,
+			_List_fromArray(
+				[
+					A2(
+					$rtfeldman$elm_css$Html$Styled$h1,
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$Attributes$css(
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center)
+								]))
+						]),
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$text('501 Scoreboard')
+						])),
+					A2(
+					$rtfeldman$elm_css$Html$Styled$div,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							$rtfeldman$elm_css$Html$Styled$div,
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Html$Styled$Attributes$css(
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Css$float($rtfeldman$elm_css$Css$left),
+											$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$relative)
+										]))
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$rtfeldman$elm_css$Html$Styled$map,
+									$author$project$D501$DartboardMsg,
+									A2($author$project$Dartboard$dartboard, 600, _List_Nil))
+								])),
+							A2(
+							$rtfeldman$elm_css$Html$Styled$div,
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Html$Styled$Attributes$css(
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Css$float($rtfeldman$elm_css$Css$left),
+											$rtfeldman$elm_css$Css$marginTop(
+											$rtfeldman$elm_css$Css$px(100)),
+											$rtfeldman$elm_css$Css$marginRight(
+											$rtfeldman$elm_css$Css$px(20)),
+											$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center)
+										]))
+								]),
+							_Utils_ap(
+								_List_fromArray(
+									[
+										A2(
+										$rtfeldman$elm_css$Html$Styled$span,
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Html$Styled$Attributes$css(
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Css$fontSize(
+														$rtfeldman$elm_css$Css$pt(20))
+													]))
+											]),
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Html$Styled$text(currentPlayer)
+											])),
+										A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil)
+									]),
+								_Utils_ap(
+									A2(
+										$elm$core$List$repeat,
+										s.currentDarts,
+										A2(
+											$rtfeldman$elm_css$Html$Styled$img,
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$Attributes$src('dart.svg'),
+													$rtfeldman$elm_css$Html$Styled$Attributes$width(20),
+													$rtfeldman$elm_css$Html$Styled$Attributes$css(
+													_List_fromArray(
+														[
+															$rtfeldman$elm_css$Css$margin(
+															$rtfeldman$elm_css$Css$px(2))
+														]))
+												]),
+											_List_Nil)),
+									_List_fromArray(
+										[
+											A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+											A2(
+											$rtfeldman$elm_css$Html$Styled$span,
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$Attributes$css(
+													_List_fromArray(
+														[
+															$rtfeldman$elm_css$Css$fontSize(
+															$rtfeldman$elm_css$Css$pt(30))
+														]))
+												]),
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$text(currentScore)
+												])),
+											A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+											A2(
+											$rtfeldman$elm_css$Html$Styled$span,
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$Attributes$css(
+													_List_fromArray(
+														[
+															$rtfeldman$elm_css$Css$fontSize(
+															$rtfeldman$elm_css$Css$pt(50))
+														]))
+												]),
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$text('↓')
+												])),
+											A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+											A2(
+											$rtfeldman$elm_css$Html$Styled$span,
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$Attributes$css(
+													_List_fromArray(
+														[
+															$rtfeldman$elm_css$Css$fontSize(
+															$rtfeldman$elm_css$Css$pt(15))
+														]))
+												]),
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$text(nextUp)
+												])),
+											A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+											A2(
+											$rtfeldman$elm_css$Html$Styled$button,
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$D501$UndoMsg),
+													$rtfeldman$elm_css$Html$Styled$Attributes$css(
+													_List_fromArray(
+														[
+															$rtfeldman$elm_css$Css$marginTop(
+															$rtfeldman$elm_css$Css$px(75))
+														]))
+												]),
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$text('Undo')
+												])),
+											A2(
+											$rtfeldman$elm_css$Html$Styled$button,
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$D501$ExitMsg),
+													$rtfeldman$elm_css$Html$Styled$Attributes$css(
+													_List_fromArray(
+														[
+															$rtfeldman$elm_css$Css$marginTop(
+															$rtfeldman$elm_css$Css$px(25))
+														]))
+												]),
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$text('Exit')
+												]))
+										])))),
+							A2(
+							$rtfeldman$elm_css$Html$Styled$div,
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Html$Styled$Attributes$css(
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Css$float($rtfeldman$elm_css$Css$left)
+										]))
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$rtfeldman$elm_css$Html$Styled$table,
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Html$Styled$Attributes$css(
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
+													$rtfeldman$elm_css$Css$fontSize(
+													$rtfeldman$elm_css$Css$pt(16))
+												]))
+										]),
+									_Utils_ap(
+										_List_fromArray(
+											[
+												A2(
+												$rtfeldman$elm_css$Html$Styled$tr,
+												_List_Nil,
+												$elm$core$Array$toList(
+													A2(
+														$elm$core$Array$map,
+														function (name) {
+															return A2(
+																$rtfeldman$elm_css$Html$Styled$th,
+																_List_fromArray(
+																	[
+																		$rtfeldman$elm_css$Html$Styled$Attributes$css(
+																		_List_fromArray(
+																			[
+																				$rtfeldman$elm_css$Css$padding(
+																				$rtfeldman$elm_css$Css$px(10))
+																			]))
+																	]),
+																_List_fromArray(
+																	[
+																		$rtfeldman$elm_css$Html$Styled$text(name)
+																	]));
+														},
+														s.playerNames))),
+												A2(
+												$rtfeldman$elm_css$Html$Styled$tr,
+												_List_Nil,
+												_List_fromArray(
+													[
+														A2(
+														$rtfeldman$elm_css$Html$Styled$td,
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Html$Styled$Attributes$colspan(100)
+															]),
+														_List_fromArray(
+															[
+																A2($rtfeldman$elm_css$Html$Styled$hr, _List_Nil, _List_Nil)
+															]))
+													]))
+											]),
+										$author$project$D501$preparePointsTableRows(s)))
+								]))
+						]))
+				])),
+		title: '501 Scoreboard'
+	};
+};
+var $author$project$Tactics$ChoiceMsg = function (a) {
+	return {$: 'ChoiceMsg', a: a};
+};
+var $author$project$Tactics$DartboardMsg = function (a) {
+	return {$: 'DartboardMsg', a: a};
+};
+var $author$project$Tactics$UndoMsg = {$: 'UndoMsg'};
+var $rtfeldman$elm_css$Css$absolute = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'absolute'};
+var $rtfeldman$elm_css$Css$backgroundColor = function (c) {
+	return A2($rtfeldman$elm_css$Css$property, 'background-color', c.value);
+};
+var $rtfeldman$elm_css$Css$EmUnits = {$: 'EmUnits'};
+var $rtfeldman$elm_css$Css$em = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$EmUnits, 'em');
+var $rtfeldman$elm_css$Css$height = $rtfeldman$elm_css$Css$prop1('height');
+var $rtfeldman$elm_css$Css$hidden = {borderStyle: $rtfeldman$elm_css$Css$Structure$Compatible, overflow: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'hidden', visibility: $rtfeldman$elm_css$Css$Structure$Compatible};
+var $author$project$Util$intersperseEvery = F3(
+	function (n, x, ls) {
+		var helper = F2(
+			function (m, l) {
+				if (!l.b) {
+					return _List_Nil;
+				} else {
+					var e = l.a;
+					var ll = l.b;
+					return (!m) ? A2(
+						$elm$core$List$cons,
+						x,
+						A2(
+							$elm$core$List$cons,
+							e,
+							A2(helper, n - 1, ll))) : A2(
+						$elm$core$List$cons,
+						e,
+						A2(helper, m - 1, ll));
+				}
+			});
+		return A2(helper, n, ls);
+	});
+var $rtfeldman$elm_css$Css$marginBottom = $rtfeldman$elm_css$Css$prop1('margin-bottom');
+var $rtfeldman$elm_css$Css$maxWidth = $rtfeldman$elm_css$Css$prop1('max-width');
 var $rtfeldman$elm_css$Css$rgba = F4(
 	function (r, g, b, alpha) {
 		return {
@@ -9433,16 +10053,9 @@ var $rtfeldman$elm_css$Css$rgba = F4(
 						])))
 		};
 	});
-var $rtfeldman$elm_css$Html$Styled$span = $rtfeldman$elm_css$Html$Styled$node('span');
-var $rtfeldman$elm_css$Html$Styled$Attributes$src = function (url) {
-	return A2($rtfeldman$elm_css$Html$Styled$Attributes$stringProperty, 'src', url);
-};
-var $rtfeldman$elm_css$Html$Styled$table = $rtfeldman$elm_css$Html$Styled$node('table');
 var $rtfeldman$elm_css$Css$lineThrough = {textDecorationLine: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'line-through'};
 var $rtfeldman$elm_css$Css$minWidth = $rtfeldman$elm_css$Css$prop1('min-width');
-var $rtfeldman$elm_css$Html$Styled$td = $rtfeldman$elm_css$Html$Styled$node('td');
 var $rtfeldman$elm_css$Css$textDecoration = $rtfeldman$elm_css$Css$prop1('text-decoration');
-var $rtfeldman$elm_css$Html$Styled$tr = $rtfeldman$elm_css$Html$Styled$node('tr');
 var $author$project$Tactics$tableRow = F2(
 	function (s, _v0) {
 		var n = _v0.a;
@@ -9521,13 +10134,6 @@ var $author$project$Tactics$tableRows = _Utils_ap(
 			_Utils_Tuple2(22, 'Double'),
 			_Utils_Tuple2(25, 'Bull')
 		]));
-var $rtfeldman$elm_css$Html$Styled$Attributes$colspan = function (n) {
-	return A2(
-		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
-		'colspan',
-		$elm$core$String$fromInt(n));
-};
-var $rtfeldman$elm_css$Html$Styled$hr = $rtfeldman$elm_css$Html$Styled$node('hr');
 var $author$project$Tactics$tableSeparator = A2(
 	$rtfeldman$elm_css$Html$Styled$tr,
 	_List_Nil,
@@ -9544,18 +10150,11 @@ var $author$project$Tactics$tableSeparator = A2(
 					A2($rtfeldman$elm_css$Html$Styled$hr, _List_Nil, _List_Nil)
 				]))
 		]));
-var $rtfeldman$elm_css$Html$Styled$th = $rtfeldman$elm_css$Html$Styled$node('th');
 var $rtfeldman$elm_css$Css$top = $rtfeldman$elm_css$Css$prop1('top');
 var $rtfeldman$elm_css$Css$transparent = {color: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'transparent'};
 var $rtfeldman$elm_css$Css$visibility = $rtfeldman$elm_css$Css$prop1('visibility');
 var $rtfeldman$elm_css$Css$visible = {overflow: $rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'visible', visibility: $rtfeldman$elm_css$Css$Structure$Compatible};
 var $rtfeldman$elm_css$Css$width = $rtfeldman$elm_css$Css$prop1('width');
-var $rtfeldman$elm_css$Html$Styled$Attributes$width = function (n) {
-	return A2(
-		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
-		'width',
-		$elm$core$String$fromInt(n));
-};
 var $rtfeldman$elm_css$Css$zIndex = $rtfeldman$elm_css$Css$prop1('z-index');
 var $author$project$Tactics$view = function (s) {
 	var teamBCurrent = A2(
@@ -10096,99 +10695,106 @@ var $author$project$Tactics$view = function (s) {
 	};
 };
 var $author$project$Main$view = function (s) {
-	if (s.$ === 'TacticsState') {
-		var ts = s.a;
-		return A2(
-			$author$project$Main$mapDocument,
-			$author$project$Main$TacticsMsg,
-			$author$project$Tactics$view(ts));
-	} else {
-		var sel = s.a;
-		var players = s.b;
-		return {
-			body: A2(
-				$elm$core$List$map,
-				$rtfeldman$elm_css$Html$Styled$toUnstyled,
-				_List_fromArray(
-					[
-						A2(
-						$rtfeldman$elm_css$Html$Styled$h1,
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$Attributes$css(
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center)
-									]))
-							]),
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$text('Select your Game')
-							])),
-						A2(
-						$rtfeldman$elm_css$Html$Styled$div,
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$Attributes$css(
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
-										A2(
-										$rtfeldman$elm_css$Css$margin2,
-										$rtfeldman$elm_css$Css$px(20),
-										$rtfeldman$elm_css$Css$auto)
-									]))
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$rtfeldman$elm_css$Html$Styled$select,
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Html$Styled$Attributes$size(5),
-										$rtfeldman$elm_css$Html$Styled$Attributes$name('Select Game')
-									]),
-								A2(
-									$elm$core$List$map,
-									$author$project$Main$makeOption(sel),
-									$author$project$Main$games)),
-								A2(
-								$rtfeldman$elm_css$Html$Styled$textarea,
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Html$Styled$Events$onInput($author$project$Main$PlayersChange),
-										$rtfeldman$elm_css$Html$Styled$Attributes$placeholder('Enter players, one per row'),
-										$rtfeldman$elm_css$Html$Styled$Attributes$rows(6),
-										$rtfeldman$elm_css$Html$Styled$Attributes$cols(30)
-									]),
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Html$Styled$text(players)
-									])),
-								A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
-								A2(
-								$rtfeldman$elm_css$Html$Styled$button,
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$Main$GameStart),
-										$rtfeldman$elm_css$Html$Styled$Attributes$css(
-										_List_fromArray(
-											[
-												$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
-												A2(
-												$rtfeldman$elm_css$Css$margin2,
-												$rtfeldman$elm_css$Css$px(20),
-												$rtfeldman$elm_css$Css$auto)
-											]))
-									]),
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Html$Styled$text('Start Game')
-									]))
-							]))
-					])),
-			title: 'Darts Scoreboard'
-		};
+	switch (s.$) {
+		case 'TacticsState':
+			var ts = s.a;
+			return A2(
+				$author$project$Main$mapDocument,
+				$author$project$Main$TacticsMsg,
+				$author$project$Tactics$view(ts));
+		case 'D501State':
+			var fs = s.a;
+			return A2(
+				$author$project$Main$mapDocument,
+				$author$project$Main$D501Msg,
+				$author$project$D501$view(fs));
+		default:
+			var sel = s.a;
+			var players = s.b;
+			return {
+				body: A2(
+					$elm$core$List$map,
+					$rtfeldman$elm_css$Html$Styled$toUnstyled,
+					_List_fromArray(
+						[
+							A2(
+							$rtfeldman$elm_css$Html$Styled$h1,
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Html$Styled$Attributes$css(
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center)
+										]))
+								]),
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Html$Styled$text('Select your Game')
+								])),
+							A2(
+							$rtfeldman$elm_css$Html$Styled$div,
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Html$Styled$Attributes$css(
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
+											A2(
+											$rtfeldman$elm_css$Css$margin2,
+											$rtfeldman$elm_css$Css$px(20),
+											$rtfeldman$elm_css$Css$auto)
+										]))
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$rtfeldman$elm_css$Html$Styled$select,
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Html$Styled$Attributes$size(5),
+											$rtfeldman$elm_css$Html$Styled$Attributes$name('Select Game')
+										]),
+									A2(
+										$elm$core$List$map,
+										$author$project$Main$makeOption(sel),
+										$author$project$Main$games)),
+									A2(
+									$rtfeldman$elm_css$Html$Styled$textarea,
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Html$Styled$Events$onInput($author$project$Main$PlayersChange),
+											$rtfeldman$elm_css$Html$Styled$Attributes$placeholder('Enter players, one per row'),
+											$rtfeldman$elm_css$Html$Styled$Attributes$rows(6),
+											$rtfeldman$elm_css$Html$Styled$Attributes$cols(30)
+										]),
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Html$Styled$text(players)
+										])),
+									A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+									A2(
+									$rtfeldman$elm_css$Html$Styled$button,
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$Main$GameStart),
+											$rtfeldman$elm_css$Html$Styled$Attributes$css(
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
+													A2(
+													$rtfeldman$elm_css$Css$margin2,
+													$rtfeldman$elm_css$Css$px(20),
+													$rtfeldman$elm_css$Css$auto)
+												]))
+										]),
+									_List_fromArray(
+										[
+											$rtfeldman$elm_css$Html$Styled$text('Start Game')
+										]))
+								]))
+						])),
+				title: 'Darts Scoreboard'
+			};
 	}
 };
 var $author$project$Main$main = $elm$browser$Browser$document(
