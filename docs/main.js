@@ -5215,6 +5215,7 @@ var $author$project$Tactics$ExitMsg = {$: 'ExitMsg'};
 var $author$project$Tactics$isExitMsg = function (m) {
 	return _Utils_eq(m, $author$project$Tactics$ExitMsg);
 };
+var $author$project$D501$Undecided = {$: 'Undecided'};
 var $elm$core$Array$fromListHelp = F3(
 	function (list, nodeList, nodeListSize) {
 		fromListHelp:
@@ -5399,19 +5400,28 @@ var $author$project$Util$zip = $elm$core$List$map2(
 		function (a, b) {
 			return _Utils_Tuple2(a, b);
 		}));
+var $author$project$D501$initPoints = function (numPlayers) {
+	return $elm$core$Dict$fromList(
+		A2(
+			$author$project$Util$zip,
+			A2($elm$core$List$range, 0, numPlayers - 1),
+			A2($elm$core$List$repeat, numPlayers, _List_Nil)));
+};
 var $author$project$D501$makeInitState = function (players) {
 	var numPlayers = $elm$core$List$length(players);
-	var initPoints = A2(
+	var plw = A2(
 		$author$project$Util$zip,
 		A2($elm$core$List$range, 0, numPlayers - 1),
-		A2($elm$core$List$repeat, numPlayers, _List_Nil));
+		A2($elm$core$List$repeat, numPlayers, 0));
 	return {
 		currentDarts: 3,
 		currentPlayer: 0,
 		currentPoints: 0,
 		history: _List_Nil,
+		legStatus: $author$project$D501$Undecided,
+		playerLegsWon: $elm$core$Dict$fromList(plw),
 		playerNames: $elm$core$Array$fromList(players),
-		playerPoints: $elm$core$Dict$fromList(initPoints)
+		playerPoints: $author$project$D501$initPoints(numPlayers)
 	};
 };
 var $author$project$Tactics$A = {$: 'A'};
@@ -5479,19 +5489,21 @@ var $author$project$Tactics$makeInitState = function (players) {
 	};
 };
 var $elm$core$Basics$not = _Basics_not;
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
+var $author$project$D501$DartHE = function (a) {
+	return {$: 'DartHE', a: a};
+};
+var $author$project$D501$Won = function (a) {
+	return {$: 'Won', a: a};
+};
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
 		} else {
 			return $elm$core$Maybe$Nothing;
 		}
-	});
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
 	});
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -5902,11 +5914,8 @@ var $author$project$D501$addPlayerPoints = F3(
 		return A3(
 			$elm$core$Dict$update,
 			player,
-			$elm$core$Maybe$andThen(
-				A2(
-					$elm$core$Basics$composeR,
-					$elm$core$List$cons(points),
-					$elm$core$Maybe$Just)),
+			$elm$core$Maybe$map(
+				$elm$core$List$cons(points)),
 			table);
 	});
 var $author$project$D501$dartboardValue = function (d) {
@@ -5931,6 +5940,15 @@ var $author$project$D501$dartboardValue = function (d) {
 			return 0;
 	}
 };
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $elm$core$List$head = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -5979,6 +5997,7 @@ var $author$project$D501$dartThrowUpdate = F2(
 		var oldPlayerPoints = A2($author$project$D501$getPlayerPoints, s.currentPlayer, s.playerPoints);
 		var newCurrentPoints = s.currentPoints + $author$project$D501$dartboardValue(d);
 		var newPlayerPoints = oldPlayerPoints - newCurrentPoints;
+		var newLegStatus = _Utils_eq(s.legStatus, $author$project$D501$Undecided) ? ((!newPlayerPoints) ? $author$project$D501$Won(s.currentPlayer) : $author$project$D501$Undecided) : s.legStatus;
 		var turnInvalid = (newPlayerPoints < 0) || ((newPlayerPoints === 1) || ((!newPlayerPoints) && (!$author$project$D501$isDouble(d))));
 		var playerPointsUpdate = A3(
 			$author$project$D501$addPlayerPoints,
@@ -5986,7 +6005,8 @@ var $author$project$D501$dartThrowUpdate = F2(
 			s.playerPoints,
 			turnInvalid ? oldPlayerPoints : newPlayerPoints);
 		var turnFinished = (s.currentDarts === 1) || (turnInvalid || (!newPlayerPoints));
-		var historyEntry = {darts: s.currentDarts, player: s.currentPlayer, points: s.currentPoints, turn: turnFinished};
+		var historyEntry = $author$project$D501$DartHE(
+			{darts: s.currentDarts, player: s.currentPlayer, points: s.currentPoints, result: s.legStatus, turn: turnFinished});
 		var findNextPlayer = function (p) {
 			findNextPlayer:
 			while (true) {
@@ -6005,13 +6025,14 @@ var $author$project$D501$dartThrowUpdate = F2(
 			}
 		};
 		var nextPlayer = findNextPlayer(s.currentPlayer);
-		return turnFinished ? _Utils_update(
+		return (!A2($author$project$D501$getPlayerPoints, s.currentPlayer, s.playerPoints)) ? s : (turnFinished ? _Utils_update(
 			s,
 			{
 				currentDarts: 3,
 				currentPlayer: nextPlayer,
 				currentPoints: 0,
 				history: A2($elm$core$List$cons, historyEntry, s.history),
+				legStatus: newLegStatus,
 				playerPoints: playerPointsUpdate
 			}) : _Utils_update(
 			s,
@@ -6019,8 +6040,47 @@ var $author$project$D501$dartThrowUpdate = F2(
 				currentDarts: s.currentDarts - 1,
 				currentPoints: newCurrentPoints,
 				history: A2($elm$core$List$cons, historyEntry, s.history)
-			});
+			}));
 	});
+var $author$project$D501$LegHE = function (a) {
+	return {$: 'LegHE', a: a};
+};
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $author$project$D501$nextLegUpdate = function (s) {
+	var legWinner = function () {
+		var _v0 = s.legStatus;
+		if (_v0.$ === 'Won') {
+			var p = _v0.a;
+			return p;
+		} else {
+			return -1;
+		}
+	}();
+	var newLegsWon = A3(
+		$elm$core$Dict$update,
+		legWinner,
+		$elm$core$Maybe$map(
+			function (x) {
+				return x + 1;
+			}),
+		s.playerLegsWon);
+	var he = $author$project$D501$LegHE(
+		{darts: s.currentDarts, legWinner: legWinner, player: s.currentPlayer, points: s.currentPoints, scoreboard: s.playerPoints});
+	return _Utils_update(
+		s,
+		{
+			currentDarts: 3,
+			currentPlayer: 0,
+			currentPoints: 0,
+			history: A2($elm$core$List$cons, he, s.history),
+			legStatus: $author$project$D501$Undecided,
+			playerLegsWon: newLegsWon,
+			playerPoints: $author$project$D501$initPoints(
+				$elm$core$Array$length(s.playerNames))
+		});
+};
 var $elm$core$List$tail = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -6043,22 +6103,52 @@ var $author$project$D501$undoUpdate = function (s) {
 	if (!_v0.b) {
 		return s;
 	} else {
-		var player = _v0.a.player;
-		var darts = _v0.a.darts;
-		var points = _v0.a.points;
-		var turn = _v0.a.turn;
-		var histRemainder = _v0.b;
-		return (!turn) ? _Utils_update(
-			s,
-			{currentDarts: darts, currentPoints: points, history: histRemainder}) : _Utils_update(
-			s,
-			{
-				currentDarts: darts,
-				currentPlayer: player,
-				currentPoints: points,
-				history: histRemainder,
-				playerPoints: A2($author$project$D501$undoPlayerPoints, player, s.playerPoints)
-			});
+		if (_v0.a.$ === 'DartHE') {
+			var player = _v0.a.a.player;
+			var darts = _v0.a.a.darts;
+			var points = _v0.a.a.points;
+			var turn = _v0.a.a.turn;
+			var result = _v0.a.a.result;
+			var histRemainder = _v0.b;
+			return (!turn) ? _Utils_update(
+				s,
+				{currentDarts: darts, currentPoints: points, history: histRemainder}) : _Utils_update(
+				s,
+				{
+					currentDarts: darts,
+					currentPlayer: player,
+					currentPoints: points,
+					history: histRemainder,
+					legStatus: result,
+					playerPoints: A2($author$project$D501$undoPlayerPoints, player, s.playerPoints)
+				});
+		} else {
+			var player = _v0.a.a.player;
+			var darts = _v0.a.a.darts;
+			var points = _v0.a.a.points;
+			var scoreboard = _v0.a.a.scoreboard;
+			var legWinner = _v0.a.a.legWinner;
+			var histRemainder = _v0.b;
+			var undoPlayerLegsWon = A3(
+				$elm$core$Dict$update,
+				legWinner,
+				$elm$core$Maybe$map(
+					function (x) {
+						return x - 1;
+					}),
+				s.playerLegsWon);
+			return _Utils_update(
+				s,
+				{
+					currentDarts: darts,
+					currentPlayer: player,
+					currentPoints: points,
+					history: histRemainder,
+					legStatus: $author$project$D501$Won(legWinner),
+					playerLegsWon: undoPlayerLegsWon,
+					playerPoints: scoreboard
+				});
+		}
 	}
 };
 var $author$project$D501$update = F2(
@@ -6069,6 +6159,8 @@ var $author$project$D501$update = F2(
 			case 'DartboardMsg':
 				var dart = msg.a;
 				return A2($author$project$D501$dartThrowUpdate, dart, state);
+			case 'NextLegMsg':
+				return $author$project$D501$nextLegUpdate(state);
 			default:
 				return state;
 		}
@@ -6596,16 +6688,6 @@ var $rtfeldman$elm_css$Css$Structure$compactStylesheet = function (_v0) {
 	var finalDeclarations = A2($rtfeldman$elm_css$Css$Structure$withKeyframeDeclarations, keyframesByName, compactedDeclarations);
 	return {charset: charset, declarations: finalDeclarations, imports: imports, namespaces: namespaces};
 };
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $rtfeldman$elm_css$Css$Structure$Output$charsetToString = function (charset) {
 	return A2(
 		$elm$core$Maybe$withDefault,
@@ -7371,9 +7453,6 @@ var $Skinney$murmur3$Murmur3$hashString = F2(
 	});
 var $rtfeldman$elm_css$Hash$murmurSeed = 15739;
 var $elm$core$String$fromList = _String_fromList;
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $rtfeldman$elm_hex$Hex$unsafeToDigit = function (num) {
 	unsafeToDigit:
 	while (true) {
@@ -8909,6 +8988,7 @@ var $rtfeldman$elm_css$Html$Styled$toUnstyled = $rtfeldman$elm_css$VirtualDom$St
 var $author$project$D501$DartboardMsg = function (a) {
 	return {$: 'DartboardMsg', a: a};
 };
+var $author$project$D501$NextLegMsg = {$: 'NextLegMsg'};
 var $author$project$D501$UndoMsg = {$: 'UndoMsg'};
 var $rtfeldman$elm_css$Html$Styled$Attributes$colspan = function (n) {
 	return A2(
@@ -9170,6 +9250,11 @@ var $author$project$Dartboard$circleArc = F8(
 					]),
 				attr),
 			_List_Nil);
+	});
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
 	});
 var $author$project$Util$even = A2(
 	$elm$core$Basics$composeR,
@@ -9611,6 +9696,8 @@ var $elm$core$List$maximum = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
+var $rtfeldman$elm_css$Css$PtUnits = {$: 'PtUnits'};
+var $rtfeldman$elm_css$Css$pt = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PtUnits, 'pt');
 var $rtfeldman$elm_css$Html$Styled$td = $rtfeldman$elm_css$Html$Styled$node('td');
 var $rtfeldman$elm_css$Html$Styled$tr = $rtfeldman$elm_css$Html$Styled$node('tr');
 var $author$project$D501$transposeWithDefault = F3(
@@ -9637,27 +9724,47 @@ var $author$project$D501$transposeWithDefault = F3(
 					matrix)));
 	});
 var $author$project$D501$preparePointsTableRows = function (s) {
+	var pointsToString = function (points) {
+		return _Utils_eq(points, -1) ? '☆' : $elm$core$String$fromInt(points);
+	};
 	var players = A2(
 		$elm$core$List$range,
 		0,
 		$elm$core$Array$length(s.playerNames) - 1);
+	var playerPointsWithVictory = function () {
+		var _v0 = s.legStatus;
+		if (_v0.$ === 'Undecided') {
+			return s.playerPoints;
+		} else {
+			var p = _v0.a;
+			return A3($author$project$D501$addPlayerPoints, p, s.playerPoints, -1);
+		}
+	}();
 	var pointsLists = A2(
 		$elm$core$List$map,
 		function (x) {
 			return A2(
 				$elm$core$List$map,
-				$elm$core$String$fromInt,
+				pointsToString,
 				$elm$core$List$reverse(
 					A2(
 						$elm$core$Maybe$withDefault,
 						_List_Nil,
-						A2($elm$core$Dict$get, x, s.playerPoints))));
+						A2($elm$core$Dict$get, x, playerPointsWithVictory))));
 		},
 		players);
 	var makeTD = function (string) {
 		return A2(
 			$rtfeldman$elm_css$Html$Styled$td,
-			_List_Nil,
+			(string === '☆') ? _List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Attributes$css(
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Css$fontSize(
+							$rtfeldman$elm_css$Css$pt(40))
+						]))
+				]) : _List_Nil,
 			_List_fromArray(
 				[
 					$rtfeldman$elm_css$Html$Styled$text(string)
@@ -9689,8 +9796,6 @@ var $author$project$D501$preparePointsTableRows = function (s) {
 			$elm$core$List$map(makeTD)),
 		rowStrings);
 };
-var $rtfeldman$elm_css$Css$PtUnits = {$: 'PtUnits'};
-var $rtfeldman$elm_css$Css$pt = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PtUnits, 'pt');
 var $rtfeldman$elm_css$Css$relative = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'relative'};
 var $rtfeldman$elm_css$Html$Styled$span = $rtfeldman$elm_css$Html$Styled$node('span');
 var $rtfeldman$elm_css$Html$Styled$Attributes$src = function (url) {
@@ -9831,90 +9936,111 @@ var $author$project$D501$view = function (s) {
 														]))
 												]),
 											_List_Nil)),
-									_List_fromArray(
-										[
-											A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
-											A2(
-											$rtfeldman$elm_css$Html$Styled$span,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$Attributes$css(
-													_List_fromArray(
-														[
-															$rtfeldman$elm_css$Css$fontSize(
-															$rtfeldman$elm_css$Css$pt(30))
-														]))
-												]),
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$text(currentScore)
-												])),
-											A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
-											A2(
-											$rtfeldman$elm_css$Html$Styled$span,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$Attributes$css(
-													_List_fromArray(
-														[
-															$rtfeldman$elm_css$Css$fontSize(
-															$rtfeldman$elm_css$Css$pt(50))
-														]))
-												]),
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$text('↓')
-												])),
-											A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
-											A2(
-											$rtfeldman$elm_css$Html$Styled$span,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$Attributes$css(
-													_List_fromArray(
-														[
-															$rtfeldman$elm_css$Css$fontSize(
-															$rtfeldman$elm_css$Css$pt(15))
-														]))
-												]),
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$text(nextUp)
-												])),
-											A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
-											A2(
-											$rtfeldman$elm_css$Html$Styled$button,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$D501$UndoMsg),
-													$rtfeldman$elm_css$Html$Styled$Attributes$css(
-													_List_fromArray(
-														[
-															$rtfeldman$elm_css$Css$marginTop(
-															$rtfeldman$elm_css$Css$px(75))
-														]))
-												]),
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$text('Undo')
-												])),
-											A2(
-											$rtfeldman$elm_css$Html$Styled$button,
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$D501$ExitMsg),
-													$rtfeldman$elm_css$Html$Styled$Attributes$css(
-													_List_fromArray(
-														[
-															$rtfeldman$elm_css$Css$marginTop(
-															$rtfeldman$elm_css$Css$px(25))
-														]))
-												]),
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$text('Exit')
-												]))
-										])))),
+									_Utils_ap(
+										_List_fromArray(
+											[
+												A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+												A2(
+												$rtfeldman$elm_css$Html$Styled$span,
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$Attributes$css(
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Css$fontSize(
+																$rtfeldman$elm_css$Css$pt(30))
+															]))
+													]),
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$text(currentScore)
+													])),
+												A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+												A2(
+												$rtfeldman$elm_css$Html$Styled$span,
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$Attributes$css(
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Css$fontSize(
+																$rtfeldman$elm_css$Css$pt(50))
+															]))
+													]),
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$text('↓')
+													])),
+												A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+												A2(
+												$rtfeldman$elm_css$Html$Styled$span,
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$Attributes$css(
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Css$fontSize(
+																$rtfeldman$elm_css$Css$pt(15))
+															]))
+													]),
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$text(nextUp)
+													])),
+												A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+												A2(
+												$rtfeldman$elm_css$Html$Styled$button,
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$D501$UndoMsg),
+														$rtfeldman$elm_css$Html$Styled$Attributes$css(
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Css$marginTop(
+																$rtfeldman$elm_css$Css$px(75))
+															]))
+													]),
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$text('Undo')
+													])),
+												A2(
+												$rtfeldman$elm_css$Html$Styled$button,
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$D501$ExitMsg),
+														$rtfeldman$elm_css$Html$Styled$Attributes$css(
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Css$marginTop(
+																$rtfeldman$elm_css$Css$px(25))
+															]))
+													]),
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$text('Exit')
+													]))
+											]),
+										(!_Utils_eq(s.legStatus, $author$project$D501$Undecided)) ? _List_fromArray(
+											[
+												A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+												A2(
+												$rtfeldman$elm_css$Html$Styled$button,
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$D501$NextLegMsg),
+														$rtfeldman$elm_css$Html$Styled$Attributes$css(
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Css$marginTop(
+																$rtfeldman$elm_css$Css$px(25))
+															]))
+													]),
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$text('Next Leg')
+													]))
+											]) : _List_Nil)))),
 							A2(
 							$rtfeldman$elm_css$Html$Styled$div,
 							_List_fromArray(
@@ -9966,6 +10092,38 @@ var $author$project$D501$view = function (s) {
 																	]));
 														},
 														s.playerNames))),
+												A2(
+												$rtfeldman$elm_css$Html$Styled$tr,
+												_List_Nil,
+												_List_fromArray(
+													[
+														A2(
+														$rtfeldman$elm_css$Html$Styled$td,
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Html$Styled$Attributes$colspan(100)
+															]),
+														_List_fromArray(
+															[
+																A2($rtfeldman$elm_css$Html$Styled$hr, _List_Nil, _List_Nil)
+															]))
+													])),
+												A2(
+												$rtfeldman$elm_css$Html$Styled$tr,
+												_List_Nil,
+												A2(
+													$elm$core$List$map,
+													function (legs) {
+														return A2(
+															$rtfeldman$elm_css$Html$Styled$td,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	$rtfeldman$elm_css$Html$Styled$text(
+																	$elm$core$String$fromInt(legs))
+																]));
+													},
+													$elm$core$Dict$values(s.playerLegsWon))),
 												A2(
 												$rtfeldman$elm_css$Html$Styled$tr,
 												_List_Nil,
