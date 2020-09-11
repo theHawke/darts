@@ -252,6 +252,9 @@ nextLegUpdate s =
         newLegsWon =
             Dict.update legWinner (Maybe.map <| \x -> x + 1) s.playerLegsWon
 
+        totalLegsPlayed =
+            Dict.toList newLegsWon |> List.map (\( _, w ) -> w) |> List.sum
+
         he =
             LegHE
                 { player = s.currentPlayer
@@ -262,7 +265,7 @@ nextLegUpdate s =
                 }
     in
     { s
-        | currentPlayer = 0
+        | currentPlayer = modBy (Array.length s.playerNames) totalLegsPlayed
         , currentDarts = 3
         , currentPoints = 0
         , playerPoints = initPoints <| Array.length s.playerNames

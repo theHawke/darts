@@ -7,6 +7,7 @@ import Html
 import Html.Styled as S exposing (button, div, h1, option, select, text, textarea, toUnstyled)
 import Html.Styled.Attributes as A exposing (css)
 import Html.Styled.Events exposing (onClick, onInput)
+import Minus
 import Platform.Cmd as C
 import Tactics
 
@@ -25,6 +26,7 @@ type State
     = GameSelect String String
     | TacticsState Tactics.State
     | D501State D501.State
+    | MinusState Minus.State
 
 
 type Msg
@@ -33,6 +35,7 @@ type Msg
     | GameStart
     | TacticsMsg Tactics.Msg
     | D501Msg D501.Msg
+    | MinusMsg Minus.Msg
 
 
 initState : State
@@ -44,6 +47,7 @@ games : List String
 games =
     [ "Tactics"
     , "501"
+    , "Minus"
     ]
 
 
@@ -64,6 +68,13 @@ update m s =
             else
                 ( D501State <| D501.update fm fs, C.none )
 
+        ( MinusMsg mm, MinusState ms ) ->
+            if Minus.isExitMsg mm then
+                ( initState, C.none )
+
+            else
+                ( MinusState <| Minus.update mm ms, C.none )
+
         ( gsm, GameSelect sel players ) ->
             case gsm of
                 PlayersChange new_players ->
@@ -79,6 +90,9 @@ update m s =
 
                         "501" ->
                             ( D501State <| D501.makeInitState <| List.filter (\str -> not <| String.isEmpty str) <| String.split "\n" players, C.none )
+
+                        "Minus" ->
+                            ( MinusState <| Minus.makeInitState <| List.filter (\str -> not <| String.isEmpty str) <| String.split "\n" players, C.none )
 
                         _ ->
                             ( s, C.none )
@@ -103,6 +117,9 @@ view s =
 
         D501State fs ->
             mapDocument D501Msg <| D501.view fs
+
+        MinusState ms ->
+            mapDocument MinusMsg <| Minus.view ms
 
         GameSelect sel players ->
             { title = "Darts Scoreboard"
