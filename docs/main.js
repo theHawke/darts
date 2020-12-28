@@ -5440,11 +5440,8 @@ var $author$project$Minus$makeInitState = function (players) {
 		currentPoints: 0,
 		currentTarget: 200,
 		history: _List_Nil,
-		playerLives: $elm$core$Dict$fromList(
-			A2(
-				$author$project$Util$zip,
-				A2($elm$core$List$range, 0, numPlayers - 1),
-				A2($elm$core$List$repeat, numPlayers, 3))),
+		playerLives: $elm$core$Array$fromList(
+			A2($elm$core$List$repeat, numPlayers, 3)),
 		playerNames: $elm$core$Array$fromList(players),
 		swimming: $author$project$Minus$Unused
 	};
@@ -6205,7 +6202,6 @@ var $author$project$D501$update = F2(
 		}
 	});
 var $author$project$Minus$Drowned = {$: 'Drowned'};
-var $author$project$Minus$Placeholder = {$: 'Placeholder'};
 var $author$project$Minus$Swimming = function (a) {
 	return {$: 'Swimming', a: a};
 };
@@ -6232,25 +6228,56 @@ var $author$project$Minus$dartboardValue = function (d) {
 	}
 };
 var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
+			} else {
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
+			}
+		}
+	});
+var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
+	});
 var $author$project$Minus$playerAlive = F2(
 	function (s, p) {
 		return (A2(
 			$elm$core$Maybe$withDefault,
 			0,
-			A2($elm$core$Dict$get, p, s.playerLives)) > 0) || _Utils_eq(
+			A2($elm$core$Array$get, p, s.playerLives)) > 0) || _Utils_eq(
 			s.swimming,
 			$author$project$Minus$Swimming(p));
 	});
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
 var $author$project$Minus$playersAlive = function (s) {
 	return function () {
 		var _v0 = s.swimming;
@@ -6265,22 +6292,57 @@ var $author$project$Minus$playersAlive = function (s) {
 			function (x) {
 				return (x > 0) ? 1 : 0;
 			},
-			$elm$core$Dict$values(s.playerLives)));
+			$elm$core$Array$toList(s.playerLives)));
 };
+var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
+var $elm$core$Array$setHelp = F4(
+	function (shift, index, value, tree) {
+		var pos = $elm$core$Array$bitMask & (index >>> shift);
+		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+		if (_v0.$ === 'SubTree') {
+			var subTree = _v0.a;
+			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$SubTree(newSub),
+				tree);
+		} else {
+			var values = _v0.a;
+			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$Leaf(newLeaf),
+				tree);
+		}
+	});
+var $elm$core$Array$set = F3(
+	function (index, value, array) {
+		var len = array.a;
+		var startShift = array.b;
+		var tree = array.c;
+		var tail = array.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			tree,
+			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A4($elm$core$Array$setHelp, startShift, index, value, tree),
+			tail));
+	});
 var $author$project$Minus$dartThrowUpdate = F2(
 	function (d, s) {
 		var nextTurn = s.currentDarts === 1;
 		var newCurrentPoints = s.currentPoints + $author$project$Minus$dartboardValue(d);
 		var loseLife = nextTurn && (_Utils_cmp(newCurrentPoints, s.currentTarget) > -1);
-		var newPlayerLives = (!loseLife) ? s.playerLives : A3(
-			$elm$core$Dict$update,
-			s.currentPlayer,
-			$elm$core$Maybe$map(
-				function (x) {
-					return A2($elm$core$Basics$max, 0, x - 1);
-				}),
-			s.playerLives);
-		var historyEntry = $author$project$Minus$Placeholder;
+		var historyEntry = {prevDarts: s.currentDarts, prevLives: s.playerLives, prevPlayer: s.currentPlayer, prevPoints: s.currentPoints, prevSwimmnig: s.swimming, prevTarget: s.currentTarget};
 		var findNextPlayer = function (p) {
 			findNextPlayer:
 			while (true) {
@@ -6298,10 +6360,19 @@ var $author$project$Minus$dartThrowUpdate = F2(
 			}
 		};
 		var nextPlayer = findNextPlayer(s.currentPlayer);
+		var currentPlayerLives = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			A2($elm$core$Array$get, s.currentPlayer, s.playerLives));
+		var newPlayerLives = (!loseLife) ? s.playerLives : A3(
+			$elm$core$Array$set,
+			s.currentPlayer,
+			A2($elm$core$Basics$max, 0, currentPlayerLives - 1),
+			s.playerLives);
 		var currentLives = A2(
 			$elm$core$Maybe$withDefault,
 			0,
-			A2($elm$core$Dict$get, s.currentPlayer, s.playerLives));
+			A2($elm$core$Array$get, s.currentPlayer, s.playerLives));
 		var newSwimming = (!loseLife) ? s.swimming : (((currentLives === 1) && _Utils_eq(s.swimming, $author$project$Minus$Unused)) ? $author$project$Minus$Swimming(s.currentPlayer) : (_Utils_eq(
 			s.swimming,
 			$author$project$Minus$Swimming(s.currentPlayer)) ? $author$project$Minus$Drowned : s.swimming));
@@ -6328,9 +6399,11 @@ var $author$project$Minus$undoUpdate = function (s) {
 	if (!_v0.b) {
 		return s;
 	} else {
-		var _v1 = _v0.a;
+		var he = _v0.a;
 		var histRemainder = _v0.b;
-		return s;
+		return _Utils_update(
+			s,
+			{currentDarts: he.prevDarts, currentPlayer: he.prevPlayer, currentPoints: he.prevPoints, currentTarget: he.prevTarget, history: histRemainder, playerLives: he.prevLives, swimming: he.prevSwimmnig});
 	}
 };
 var $author$project$Minus$update = F2(
@@ -6382,6 +6455,16 @@ var $elm$core$List$unzip = function (pairs) {
 		step,
 		_Utils_Tuple2(_List_Nil, _List_Nil),
 		pairs);
+};
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
 };
 var $author$project$Tactics$victory = function (s) {
 	var _v0 = $elm$core$List$unzip(
@@ -7574,9 +7657,6 @@ var $Skinney$murmur3$Murmur3$HashData = F4(
 	});
 var $Skinney$murmur3$Murmur3$c1 = 3432918353;
 var $Skinney$murmur3$Murmur3$c2 = 461845907;
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var $Skinney$murmur3$Murmur3$multiplyBy = F2(
 	function (b, a) {
 		return ((a & 65535) * b) + ((((a >>> 16) * b) & 65535) << 16);
@@ -9700,44 +9780,6 @@ var $rtfeldman$elm_css$Css$float = function (fn) {
 		'float',
 		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
 };
-var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
-var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var $elm$core$Array$getHelp = F3(
-	function (shift, index, tree) {
-		getHelp:
-		while (true) {
-			var pos = $elm$core$Array$bitMask & (index >>> shift);
-			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_v0.$ === 'SubTree') {
-				var subTree = _v0.a;
-				var $temp$shift = shift - $elm$core$Array$shiftStep,
-					$temp$index = index,
-					$temp$tree = subTree;
-				shift = $temp$shift;
-				index = $temp$index;
-				tree = $temp$tree;
-				continue getHelp;
-			} else {
-				var values = _v0.a;
-				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
-			}
-		}
-	});
-var $elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
-};
-var $elm$core$Array$get = F2(
-	function (index, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
-			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
-			A3($elm$core$Array$getHelp, startShift, index, tree)));
-	});
 var $rtfeldman$elm_css$Html$Styled$hr = $rtfeldman$elm_css$Html$Styled$node('hr');
 var $rtfeldman$elm_css$Html$Styled$img = $rtfeldman$elm_css$Html$Styled$node('img');
 var $rtfeldman$elm_css$Css$left = $rtfeldman$elm_css$Css$prop1('left');
@@ -10364,7 +10406,7 @@ var $author$project$Minus$livesTable = function (s) {
 		var lives = A2(
 			$elm$core$Maybe$withDefault,
 			0,
-			A2($elm$core$Dict$get, p, s.playerLives));
+			A2($elm$core$Array$get, p, s.playerLives));
 		return A2(
 			$rtfeldman$elm_css$Html$Styled$tr,
 			_List_Nil,

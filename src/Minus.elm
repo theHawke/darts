@@ -5,7 +5,7 @@ import Browser
 import Css exposing (pt, px)
 import Dartboard exposing (Dartboard(..), dartboard)
 import Dict exposing (Dict)
-import Html.Styled as S exposing (br, button, div, h1, span, table, td, text, th, toUnstyled, tr)
+import Html.Styled as S exposing (a, br, button, div, h1, span, table, td, text, th, toUnstyled, tr)
 import Html.Styled.Attributes exposing (css, src, width)
 import Html.Styled.Events exposing (onClick)
 import Util exposing (zip)
@@ -16,7 +16,7 @@ type alias State =
     , currentDarts : Int
     , currentPoints : Int
     , currentTarget : Int
-    , playerLives : Dict Int Int
+    , playerLives : Array Int
     , swimming : Swimming
     , playerNames : Array String
     , history : List HistoryEntry
@@ -35,8 +35,14 @@ type Swimming
     | Drowned
 
 
-type HistoryEntry
-    = Placeholder
+type alias HistoryEntry =
+    { prevPlayer : Int
+    , prevDarts : Int
+    , prevPoints : Int
+    , prevTarget : Int
+    , prevLives : Array Int
+    , prevSwimmnig : Swimming
+    }
 
 
 isExitMsg : Msg -> Bool
@@ -54,7 +60,7 @@ makeInitState players =
     , currentDarts = 3
     , currentPoints = 0
     , currentTarget = 200
-    , playerLives = Dict.fromList <| zip (List.range 0 (numPlayers - 1)) <| List.repeat numPlayers 3
+    , playerLives = Array.fromList <| List.repeat numPlayers 3
     , swimming = Unused
     , playerNames = Array.fromList players
     , history = []
@@ -96,7 +102,13 @@ dartThrowUpdate d s =
             s.currentPoints + dartboardValue d
 
         historyEntry =
-            Placeholder
+            { prevPlayer = s.currentPlayer
+            , prevDarts = s.currentDarts
+            , prevPoints = s.currentPoints
+            , prevTarget = s.currentTarget
+            , prevLives = s.playerLives
+            , prevSwimmnig = s.swimming
+            }
 
         nextTurn =
             s.currentDarts == 1
@@ -105,7 +117,7 @@ dartThrowUpdate d s =
             nextTurn && newCurrentPoints >= s.currentTarget
 
         currentLives =
-            Dict.get s.currentPlayer s.playerLives |> Maybe.withDefault 0
+            Array.get s.currentPlayer s.playerLives |> Maybe.withDefault 0
 
         newSwimming =
             if not loseLife then
@@ -120,12 +132,15 @@ dartThrowUpdate d s =
             else
                 s.swimming
 
+        currentPlayerLives =
+            Array.get s.currentPlayer s.playerLives |> Maybe.withDefault 0
+
         newPlayerLives =
             if not loseLife then
                 s.playerLives
 
             else
-                Dict.update s.currentPlayer (Maybe.map <| \x -> max 0 (x - 1)) s.playerLives
+                Array.set s.currentPlayer (max 0 (currentPlayerLives - 1)) s.playerLives
     in
     if playersAlive s == 1 then
         s
@@ -155,8 +170,16 @@ undoUpdate s =
         [] ->
             s
 
-        Placeholder :: histRemainder ->
-            s
+        he :: histRemainder ->
+            { s
+                | currentPlayer = he.prevPlayer
+                , currentDarts = he.prevDarts
+                , currentPoints = he.prevPoints
+                , currentTarget = he.prevTarget
+                , playerLives = he.prevLives
+                , swimming = he.prevSwimmnig
+                , history = histRemainder
+            }
 
 
 dartboardValue : Dartboard -> Int
@@ -186,12 +209,12 @@ dartboardValue d =
 
 playerAlive : State -> Int -> Bool
 playerAlive s p =
-    (Dict.get p s.playerLives |> Maybe.withDefault 0) > 0 || s.swimming == Swimming p
+    (Array.get p s.playerLives |> Maybe.withDefault 0) > 0 || s.swimming == Swimming p
 
 
 playersAlive : State -> Int
 playersAlive s =
-    Dict.values s.playerLives
+    Array.toList s.playerLives
         |> List.map
             (\x ->
                 if x > 0 then
@@ -217,7 +240,7 @@ livesTable s =
         rowFn p =
             let
                 lives =
-                    Dict.get p s.playerLives |> Maybe.withDefault 0
+                    Array.get p s.playerLives |> Maybe.withDefault 0
 
                 swimming =
                     s.swimming == Swimming p
