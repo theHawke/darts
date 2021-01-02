@@ -1,5 +1,7 @@
 module Util exposing (..)
 
+import Array exposing (Array)
+
 
 zip : List a -> List b -> List ( a, b )
 zip =
@@ -14,8 +16,9 @@ even =
 modByF :
     Float
     -> Float
-    -> Float -- floating point version of modBy
+    -> Float
 modByF x mod =
+    -- floating point version of modBy
     x - mod * (toFloat <| floor <| x / mod)
 
 
@@ -52,3 +55,23 @@ unzipAlternate l =
                     helper lr (a :: la) (b :: lb)
     in
     helper l [] []
+
+
+arrayUpdate : Array a -> Int -> (a -> a) -> Array a
+arrayUpdate a i f =
+    case Array.get i a of
+        Just v ->
+            Array.set i (f v) a
+
+        Nothing ->
+            a
+
+
+arrayAdd : Array Int -> Int -> Int -> Array Int
+arrayAdd a i n =
+    arrayUpdate a i (\x -> x + n)
+
+
+arraySub : Array Int -> Int -> Int -> Array Int
+arraySub a i n =
+    arrayUpdate a i (\x -> x - n)

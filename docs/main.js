@@ -5412,8 +5412,21 @@ var $author$project$D501$initPoints = function (numPlayers) {
 		A2(
 			$author$project$Util$zip,
 			A2($elm$core$List$range, 0, numPlayers - 1),
-			A2($elm$core$List$repeat, numPlayers, _List_Nil)));
+			A2(
+				$elm$core$List$repeat,
+				numPlayers,
+				_List_fromArray(
+					[501]))));
 };
+var $elm$core$Array$repeat = F2(
+	function (n, e) {
+		return A2(
+			$elm$core$Array$initialize,
+			n,
+			function (_v0) {
+				return e;
+			});
+	});
 var $author$project$D501$makeInitState = function (players) {
 	var numPlayers = $elm$core$List$length(players);
 	var plw = A2(
@@ -5425,10 +5438,13 @@ var $author$project$D501$makeInitState = function (players) {
 		currentPlayer: 0,
 		currentPoints: 0,
 		history: _List_Nil,
+		legDarts: A2($elm$core$Array$repeat, numPlayers, 0),
+		legScores: A2($elm$core$Array$repeat, numPlayers, 0),
 		legStatus: $author$project$D501$Undecided,
 		playerLegsWon: $elm$core$Dict$fromList(plw),
 		playerNames: $elm$core$Array$fromList(players),
-		playerPoints: $author$project$D501$initPoints(numPlayers)
+		playerPoints: $author$project$D501$initPoints(numPlayers),
+		showStats: false
 	};
 };
 var $author$project$Minus$Unused = {$: 'Unused'};
@@ -5940,6 +5956,125 @@ var $author$project$D501$addPlayerPoints = F3(
 				$elm$core$List$cons(points)),
 			table);
 	});
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
+			} else {
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
+			}
+		}
+	});
+var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
+	});
+var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
+var $elm$core$Array$setHelp = F4(
+	function (shift, index, value, tree) {
+		var pos = $elm$core$Array$bitMask & (index >>> shift);
+		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+		if (_v0.$ === 'SubTree') {
+			var subTree = _v0.a;
+			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$SubTree(newSub),
+				tree);
+		} else {
+			var values = _v0.a;
+			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$Leaf(newLeaf),
+				tree);
+		}
+	});
+var $elm$core$Array$set = F3(
+	function (index, value, array) {
+		var len = array.a;
+		var startShift = array.b;
+		var tree = array.c;
+		var tail = array.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			tree,
+			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A4($elm$core$Array$setHelp, startShift, index, value, tree),
+			tail));
+	});
+var $author$project$Util$arrayUpdate = F3(
+	function (a, i, f) {
+		var _v0 = A2($elm$core$Array$get, i, a);
+		if (_v0.$ === 'Just') {
+			var v = _v0.a;
+			return A3(
+				$elm$core$Array$set,
+				i,
+				f(v),
+				a);
+		} else {
+			return a;
+		}
+	});
+var $author$project$Util$arrayAdd = F3(
+	function (a, i, n) {
+		return A3(
+			$author$project$Util$arrayUpdate,
+			a,
+			i,
+			function (x) {
+				return x + n;
+			});
+	});
+var $author$project$Util$arraySub = F3(
+	function (a, i, n) {
+		return A3(
+			$author$project$Util$arrayUpdate,
+			a,
+			i,
+			function (x) {
+				return x - n;
+			});
+	});
 var $author$project$D501$dartboardValue = function (d) {
 	switch (d.$) {
 		case 'Bull':
@@ -6019,8 +6154,13 @@ var $author$project$D501$dartThrowUpdate = F2(
 		var oldPlayerPoints = A2($author$project$D501$getPlayerPoints, s.currentPlayer, s.playerPoints);
 		var newCurrentPoints = s.currentPoints + $author$project$D501$dartboardValue(d);
 		var newPlayerPoints = oldPlayerPoints - newCurrentPoints;
-		var newLegStatus = _Utils_eq(s.legStatus, $author$project$D501$Undecided) ? ((!newPlayerPoints) ? $author$project$D501$Won(s.currentPlayer) : $author$project$D501$Undecided) : s.legStatus;
 		var turnInvalid = (newPlayerPoints < 0) || ((newPlayerPoints === 1) || ((!newPlayerPoints) && (!$author$project$D501$isDouble(d))));
+		var newLegScores = turnInvalid ? A3($author$project$Util$arraySub, s.legScores, s.currentPlayer, s.currentPoints) : A3(
+			$author$project$Util$arrayAdd,
+			s.legScores,
+			s.currentPlayer,
+			$author$project$D501$dartboardValue(d));
+		var newLegStatus = ((!turnInvalid) && _Utils_eq(s.legStatus, $author$project$D501$Undecided)) ? ((!newPlayerPoints) ? $author$project$D501$Won(s.currentPlayer) : $author$project$D501$Undecided) : s.legStatus;
 		var playerPointsUpdate = A3(
 			$author$project$D501$addPlayerPoints,
 			s.currentPlayer,
@@ -6054,6 +6194,8 @@ var $author$project$D501$dartThrowUpdate = F2(
 				currentPlayer: nextPlayer,
 				currentPoints: 0,
 				history: A2($elm$core$List$cons, historyEntry, s.history),
+				legDarts: A3($author$project$Util$arrayAdd, s.legDarts, s.currentPlayer, 1),
+				legScores: newLegScores,
 				legStatus: newLegStatus,
 				playerPoints: playerPointsUpdate
 			}) : _Utils_update(
@@ -6061,7 +6203,9 @@ var $author$project$D501$dartThrowUpdate = F2(
 			{
 				currentDarts: s.currentDarts - 1,
 				currentPoints: newCurrentPoints,
-				history: A2($elm$core$List$cons, historyEntry, s.history)
+				history: A2($elm$core$List$cons, historyEntry, s.history),
+				legDarts: A3($author$project$Util$arrayAdd, s.legDarts, s.currentPlayer, 1),
+				legScores: newLegScores
 			}));
 	});
 var $author$project$D501$LegHE = function (a) {
@@ -6074,6 +6218,7 @@ var $elm$core$List$sum = function (numbers) {
 	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
 };
 var $author$project$D501$nextLegUpdate = function (s) {
+	var numPlayers = $elm$core$Array$length(s.playerNames);
 	var legWinner = function () {
 		var _v1 = s.legStatus;
 		if (_v1.$ === 'Won') {
@@ -6100,21 +6245,19 @@ var $author$project$D501$nextLegUpdate = function (s) {
 			},
 			$elm$core$Dict$toList(newLegsWon)));
 	var he = $author$project$D501$LegHE(
-		{darts: s.currentDarts, legWinner: legWinner, player: s.currentPlayer, points: s.currentPoints, scoreboard: s.playerPoints});
+		{darts: s.currentDarts, legDarts: s.legDarts, legScores: s.legScores, legWinner: legWinner, player: s.currentPlayer, points: s.currentPoints, scoreboard: s.playerPoints});
 	return _Utils_update(
 		s,
 		{
 			currentDarts: 3,
-			currentPlayer: A2(
-				$elm$core$Basics$modBy,
-				$elm$core$Array$length(s.playerNames),
-				totalLegsPlayed),
+			currentPlayer: A2($elm$core$Basics$modBy, numPlayers, totalLegsPlayed),
 			currentPoints: 0,
 			history: A2($elm$core$List$cons, he, s.history),
+			legDarts: A2($elm$core$Array$repeat, numPlayers, 0),
+			legScores: A2($elm$core$Array$repeat, numPlayers, 0),
 			legStatus: $author$project$D501$Undecided,
 			playerLegsWon: newLegsWon,
-			playerPoints: $author$project$D501$initPoints(
-				$elm$core$Array$length(s.playerNames))
+			playerPoints: $author$project$D501$initPoints(numPlayers)
 		});
 };
 var $elm$core$List$tail = function (list) {
@@ -6146,24 +6289,41 @@ var $author$project$D501$undoUpdate = function (s) {
 			var turn = _v0.a.a.turn;
 			var result = _v0.a.a.result;
 			var histRemainder = _v0.b;
-			return (!turn) ? _Utils_update(
-				s,
-				{currentDarts: darts, currentPoints: points, history: histRemainder}) : _Utils_update(
-				s,
-				{
-					currentDarts: darts,
-					currentPlayer: player,
-					currentPoints: points,
-					history: histRemainder,
-					legStatus: result,
-					playerPoints: A2($author$project$D501$undoPlayerPoints, player, s.playerPoints)
-				});
+			if (!turn) {
+				return _Utils_update(
+					s,
+					{
+						currentDarts: darts,
+						currentPoints: points,
+						history: histRemainder,
+						legDarts: A3($author$project$Util$arraySub, s.legDarts, player, 1),
+						legScores: A3($author$project$Util$arraySub, s.legScores, player, s.currentPoints - points)
+					});
+			} else {
+				var oldPlayerPoints = A2($author$project$D501$undoPlayerPoints, player, s.playerPoints);
+				var lastScore = A2($author$project$D501$getPlayerPoints, player, oldPlayerPoints) - A2($author$project$D501$getPlayerPoints, player, s.playerPoints);
+				var oldLegScores = A3($author$project$Util$arraySub, s.legScores, player, lastScore - points);
+				return _Utils_update(
+					s,
+					{
+						currentDarts: darts,
+						currentPlayer: player,
+						currentPoints: points,
+						history: histRemainder,
+						legDarts: A3($author$project$Util$arraySub, s.legDarts, player, 1),
+						legScores: oldLegScores,
+						legStatus: result,
+						playerPoints: oldPlayerPoints
+					});
+			}
 		} else {
 			var player = _v0.a.a.player;
 			var darts = _v0.a.a.darts;
 			var points = _v0.a.a.points;
 			var scoreboard = _v0.a.a.scoreboard;
 			var legWinner = _v0.a.a.legWinner;
+			var legDarts = _v0.a.a.legDarts;
+			var legScores = _v0.a.a.legScores;
 			var histRemainder = _v0.b;
 			var undoPlayerLegsWon = A3(
 				$elm$core$Dict$update,
@@ -6180,6 +6340,8 @@ var $author$project$D501$undoUpdate = function (s) {
 					currentPlayer: player,
 					currentPoints: points,
 					history: histRemainder,
+					legDarts: legDarts,
+					legScores: legScores,
 					legStatus: $author$project$D501$Won(legWinner),
 					playerLegsWon: undoPlayerLegsWon,
 					playerPoints: scoreboard
@@ -6197,6 +6359,10 @@ var $author$project$D501$update = F2(
 				return A2($author$project$D501$dartThrowUpdate, dart, state);
 			case 'NextLegMsg':
 				return $author$project$D501$nextLegUpdate(state);
+			case 'ToggleStatsMsg':
+				return _Utils_update(
+					state,
+					{showStats: !state.showStats});
 			default:
 				return state;
 		}
@@ -6227,48 +6393,6 @@ var $author$project$Minus$dartboardValue = function (d) {
 			return 25;
 	}
 };
-var $elm$core$Basics$ge = _Utils_ge;
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
-var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var $elm$core$Array$getHelp = F3(
-	function (shift, index, tree) {
-		getHelp:
-		while (true) {
-			var pos = $elm$core$Array$bitMask & (index >>> shift);
-			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_v0.$ === 'SubTree') {
-				var subTree = _v0.a;
-				var $temp$shift = shift - $elm$core$Array$shiftStep,
-					$temp$index = index,
-					$temp$tree = subTree;
-				shift = $temp$shift;
-				index = $temp$index;
-				tree = $temp$tree;
-				continue getHelp;
-			} else {
-				var values = _v0.a;
-				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
-			}
-		}
-	});
-var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var $elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
-};
-var $elm$core$Array$get = F2(
-	function (index, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
-			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
-			A3($elm$core$Array$getHelp, startShift, index, tree)));
-	});
 var $author$project$Minus$playerAlive = F2(
 	function (s, p) {
 		return (A2(
@@ -6294,49 +6418,6 @@ var $author$project$Minus$playersAlive = function (s) {
 			},
 			$elm$core$Array$toList(s.playerLives)));
 };
-var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
-var $elm$core$Array$setHelp = F4(
-	function (shift, index, value, tree) {
-		var pos = $elm$core$Array$bitMask & (index >>> shift);
-		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-		if (_v0.$ === 'SubTree') {
-			var subTree = _v0.a;
-			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$SubTree(newSub),
-				tree);
-		} else {
-			var values = _v0.a;
-			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$Leaf(newLeaf),
-				tree);
-		}
-	});
-var $elm$core$Array$set = F3(
-	function (index, value, array) {
-		var len = array.a;
-		var startShift = array.b;
-		var tree = array.c;
-		var tail = array.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			tree,
-			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A4($elm$core$Array$setHelp, startShift, index, value, tree),
-			tail));
-	});
 var $author$project$Minus$dartThrowUpdate = F2(
 	function (d, s) {
 		var nextTurn = s.currentDarts === 1;
@@ -9260,6 +9341,7 @@ var $author$project$D501$DartboardMsg = function (a) {
 	return {$: 'DartboardMsg', a: a};
 };
 var $author$project$D501$NextLegMsg = {$: 'NextLegMsg'};
+var $author$project$D501$ToggleStatsMsg = {$: 'ToggleStatsMsg'};
 var $author$project$D501$UndoMsg = {$: 'UndoMsg'};
 var $rtfeldman$elm_css$Html$Styled$Attributes$colspan = function (n) {
 	return A2(
@@ -10029,6 +10111,102 @@ var $author$project$D501$preparePointsTableRows = function (s) {
 			$elm$core$List$map(makeTD)),
 		rowStrings);
 };
+var $author$project$D501$formatFloat = F2(
+	function (n, f) {
+		var s = $elm$core$String$fromFloat(f);
+		var parts = A2($elm$core$String$split, '.', s);
+		var whole = A2(
+			$elm$core$Maybe$withDefault,
+			'',
+			$elm$core$List$head(parts));
+		var decimal = A2(
+			$elm$core$Maybe$withDefault,
+			'0',
+			A2(
+				$elm$core$Maybe$andThen,
+				$elm$core$List$head,
+				$elm$core$List$tail(parts)));
+		return (n > 0) ? (whole + ('.' + A2($elm$core$String$left, n, decimal))) : whole;
+	});
+var $author$project$D501$prepareStatsTableRows = function (s) {
+	var scoresList = $elm$core$Array$toList(s.legScores);
+	var dartsList = $elm$core$Array$toList(s.legDarts);
+	var avgList = A3(
+		$elm$core$List$map2,
+		F2(
+			function (a, b) {
+				return (!b) ? 0 : (a / b);
+			}),
+		scoresList,
+		dartsList);
+	return s.showStats ? _List_fromArray(
+		[
+			A2(
+			$rtfeldman$elm_css$Html$Styled$tr,
+			_List_Nil,
+			A2(
+				$elm$core$List$map,
+				function (darts) {
+					return A2(
+						$rtfeldman$elm_css$Html$Styled$td,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Html$Styled$text(
+								$elm$core$String$fromInt(darts))
+							]));
+				},
+				dartsList)),
+			A2(
+			$rtfeldman$elm_css$Html$Styled$tr,
+			_List_Nil,
+			A2(
+				$elm$core$List$map,
+				function (score) {
+					return A2(
+						$rtfeldman$elm_css$Html$Styled$td,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Html$Styled$text(
+								$elm$core$String$fromInt(score))
+							]));
+				},
+				scoresList)),
+			A2(
+			$rtfeldman$elm_css$Html$Styled$tr,
+			_List_Nil,
+			A2(
+				$elm$core$List$map,
+				function (avg) {
+					return A2(
+						$rtfeldman$elm_css$Html$Styled$td,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Html$Styled$text(
+								A2($author$project$D501$formatFloat, 1, avg))
+							]));
+				},
+				avgList)),
+			A2(
+			$rtfeldman$elm_css$Html$Styled$tr,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$rtfeldman$elm_css$Html$Styled$td,
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$Attributes$colspan(100)
+						]),
+					_List_fromArray(
+						[
+							A2($rtfeldman$elm_css$Html$Styled$hr, _List_Nil, _List_Nil)
+						]))
+				]))
+		]) : _List_Nil;
+};
 var $rtfeldman$elm_css$Css$relative = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'relative'};
 var $rtfeldman$elm_css$Html$Styled$span = $rtfeldman$elm_css$Html$Styled$node('span');
 var $rtfeldman$elm_css$Html$Styled$Attributes$src = function (url) {
@@ -10230,7 +10408,7 @@ var $author$project$D501$view = function (s) {
 														_List_fromArray(
 															[
 																$rtfeldman$elm_css$Css$marginTop(
-																$rtfeldman$elm_css$Css$px(75))
+																$rtfeldman$elm_css$Css$px(50))
 															]))
 													]),
 												_List_fromArray(
@@ -10246,12 +10424,30 @@ var $author$project$D501$view = function (s) {
 														_List_fromArray(
 															[
 																$rtfeldman$elm_css$Css$marginTop(
-																$rtfeldman$elm_css$Css$px(25))
+																$rtfeldman$elm_css$Css$px(50))
 															]))
 													]),
 												_List_fromArray(
 													[
 														$rtfeldman$elm_css$Html$Styled$text('Exit')
+													])),
+												A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+												A2(
+												$rtfeldman$elm_css$Html$Styled$button,
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$D501$ToggleStatsMsg),
+														$rtfeldman$elm_css$Html$Styled$Attributes$css(
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Css$marginTop(
+																$rtfeldman$elm_css$Css$px(25))
+															]))
+													]),
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Html$Styled$text(
+														s.showStats ? 'Hide Stats' : 'Show Stats')
 													]))
 											]),
 										(!_Utils_eq(s.legStatus, $author$project$D501$Undecided)) ? _List_fromArray(
@@ -10374,7 +10570,9 @@ var $author$project$D501$view = function (s) {
 															]))
 													]))
 											]),
-										$author$project$D501$preparePointsTableRows(s)))
+										_Utils_ap(
+											$author$project$D501$prepareStatsTableRows(s),
+											$author$project$D501$preparePointsTableRows(s))))
 								]))
 						]))
 				])),

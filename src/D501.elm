@@ -2,13 +2,13 @@ module D501 exposing (Msg, State, isExitMsg, makeInitState, update, view)
 
 import Array exposing (Array)
 import Browser
-import Css exposing (pt, px)
+import Css exposing (decimal, pt, px)
 import Dartboard exposing (Dartboard(..), dartboard)
 import Dict exposing (Dict)
 import Html.Styled as S exposing (br, button, div, h1, span, table, td, text, th, toUnstyled, tr)
 import Html.Styled.Attributes exposing (colspan, css, src, width)
 import Html.Styled.Events exposing (onClick)
-import Util exposing (zip)
+import Util exposing (arrayAdd, arraySub, zip)
 
 
 type alias State =
@@ -20,6 +20,9 @@ type alias State =
     , legStatus : Result
     , playerLegsWon : Dict Int Int
     , history : List HistoryEntry
+    , showStats : Bool
+    , legScores : Array Int
+    , legDarts : Array Int
     }
 
 
@@ -28,6 +31,7 @@ type Msg
     | NextLegMsg
     | UndoMsg
     | ExitMsg
+    | ToggleStatsMsg
 
 
 type Result
@@ -50,6 +54,8 @@ type alias HELeg =
     , points : Int
     , scoreboard : Scoreboard
     , legWinner : Int
+    , legScores : Array Int
+    , legDarts : Array Int
     }
 
 
@@ -69,7 +75,7 @@ isExitMsg m =
 
 initPoints : Int -> Scoreboard
 initPoints numPlayers =
-    Dict.fromList <| zip (List.range 0 (numPlayers - 1)) <| List.repeat numPlayers []
+    Dict.fromList <| zip (List.range 0 (numPlayers - 1)) <| List.repeat numPlayers [ 501 ]
 
 
 makeInitState : List String -> State
@@ -89,6 +95,9 @@ makeInitState players =
     , legStatus = Undecided
     , playerLegsWon = Dict.fromList plw
     , history = []
+    , showStats = False
+    , legScores = Array.repeat numPlayers 0
+    , legDarts = Array.repeat numPlayers 0
     }
 
 
@@ -103,6 +112,9 @@ update msg state =
 
         NextLegMsg ->
             nextLegUpdate state
+
+        ToggleStatsMsg ->
+            { state | showStats = not state.showStats }
 
         _ ->
             state
@@ -155,7 +167,7 @@ dartThrowUpdate d s =
             s.currentDarts == 1 || turnInvalid || newPlayerPoints == 0
 
         newLegStatus =
-            if s.legStatus == Undecided then
+            if not turnInvalid && s.legStatus == Undecided then
                 if newPlayerPoints == 0 then
                     Won s.currentPlayer
 
@@ -173,6 +185,13 @@ dartThrowUpdate d s =
                 , turn = turnFinished
                 , result = s.legStatus
                 }
+
+        newLegScores =
+            if turnInvalid then
+                arraySub s.legScores s.currentPlayer s.currentPoints
+
+            else
+                arrayAdd s.legScores s.currentPlayer (dartboardValue d)
     in
     if getPlayerPoints s.currentPlayer s.playerPoints == 0 then
         s
@@ -186,6 +205,8 @@ dartThrowUpdate d s =
             , playerPoints = playerPointsUpdate
             , legStatus = newLegStatus
             , history = historyEntry :: s.history
+            , legDarts = arrayAdd s.legDarts s.currentPlayer 1
+            , legScores = newLegScores
         }
 
     else
@@ -193,6 +214,8 @@ dartThrowUpdate d s =
             | currentDarts = s.currentDarts - 1
             , currentPoints = newCurrentPoints
             , history = historyEntry :: s.history
+            , legDarts = arrayAdd s.legDarts s.currentPlayer 1
+            , legScores = newLegScores
         }
 
 
@@ -209,19 +232,33 @@ undoUpdate s =
                     | currentDarts = darts
                     , currentPoints = points
                     , history = histRemainder
+                    , legDarts = arraySub s.legDarts player 1
+                    , legScores = arraySub s.legScores player (s.currentPoints - points)
                 }
 
             else
+                let
+                    oldPlayerPoints =
+                        undoPlayerPoints player s.playerPoints
+
+                    lastScore =
+                        getPlayerPoints player oldPlayerPoints - getPlayerPoints player s.playerPoints
+
+                    oldLegScores =
+                        arraySub s.legScores player (lastScore - points)
+                in
                 { s
                     | currentPlayer = player
                     , currentDarts = darts
                     , currentPoints = points
-                    , playerPoints = undoPlayerPoints player s.playerPoints
+                    , playerPoints = oldPlayerPoints
                     , legStatus = result
                     , history = histRemainder
+                    , legDarts = arraySub s.legDarts player 1
+                    , legScores = oldLegScores
                 }
 
-        (LegHE { player, darts, points, scoreboard, legWinner }) :: histRemainder ->
+        (LegHE { player, darts, points, scoreboard, legWinner, legDarts, legScores }) :: histRemainder ->
             let
                 undoPlayerLegsWon =
                     Dict.update legWinner (Maybe.map (\x -> x - 1)) s.playerLegsWon
@@ -234,12 +271,17 @@ undoUpdate s =
                 , history = histRemainder
                 , legStatus = Won legWinner
                 , playerLegsWon = undoPlayerLegsWon
+                , legDarts = legDarts
+                , legScores = legScores
             }
 
 
 nextLegUpdate : State -> State
 nextLegUpdate s =
     let
+        numPlayers =
+            Array.length s.playerNames
+
         legWinner =
             case s.legStatus of
                 Won p ->
@@ -262,16 +304,20 @@ nextLegUpdate s =
                 , points = s.currentPoints
                 , scoreboard = s.playerPoints
                 , legWinner = legWinner
+                , legScores = s.legScores
+                , legDarts = s.legDarts
                 }
     in
     { s
-        | currentPlayer = modBy (Array.length s.playerNames) totalLegsPlayed
+        | currentPlayer = modBy numPlayers totalLegsPlayed
         , currentDarts = 3
         , currentPoints = 0
-        , playerPoints = initPoints <| Array.length s.playerNames
+        , playerPoints = initPoints numPlayers
         , playerLegsWon = newLegsWon
         , legStatus = Undecided
         , history = he :: s.history
+        , legScores = Array.repeat numPlayers 0
+        , legDarts = Array.repeat numPlayers 0
     }
 
 
@@ -381,6 +427,60 @@ preparePointsTableRows s =
     List.map (tr [ css [ Css.padding (px 10) ] ] << List.map makeTD) rowStrings
 
 
+formatFloat : Int -> Float -> String
+formatFloat n f =
+    let
+        s =
+            String.fromFloat f
+
+        parts =
+            String.split "." s
+
+        whole =
+            List.head parts |> Maybe.withDefault ""
+
+        decimal =
+            List.tail parts |> Maybe.andThen List.head |> Maybe.withDefault "0"
+    in
+    if n > 0 then
+        whole ++ "." ++ String.left n decimal
+
+    else
+        whole
+
+
+prepareStatsTableRows : State -> List (S.Html a)
+prepareStatsTableRows s =
+    let
+        dartsList =
+            Array.toList s.legDarts
+
+        scoresList =
+            Array.toList s.legScores
+
+        avgList =
+            List.map2
+                (\a b ->
+                    if b == 0 then
+                        0
+
+                    else
+                        toFloat a / toFloat b
+                )
+                scoresList
+                dartsList
+    in
+    if s.showStats then
+        [ tr [] (List.map (\darts -> td [] [ text <| String.fromInt darts ]) dartsList)
+        , tr [] (List.map (\score -> td [] [ text <| String.fromInt score ]) scoresList)
+        , tr [] (List.map (\avg -> td [] [ text <| formatFloat 1 avg ]) avgList)
+        , tr [] [ td [ colspan 100 ] [ S.hr [] [] ] ]
+        ]
+
+    else
+        []
+
+
 transposeWithDefault : Int -> a -> List (List a) -> List (List a)
 transposeWithDefault length default matrix =
     if length == 0 then
@@ -444,8 +544,18 @@ view s =
                            , br [] []
                            , span [ css [ Css.fontSize <| pt 15 ] ] [ text nextUp ]
                            , br [] []
-                           , button [ onClick UndoMsg, css [ Css.marginTop <| px 75 ] ] [ text "Undo" ]
-                           , button [ onClick ExitMsg, css [ Css.marginTop <| px 25 ] ] [ text "Exit" ]
+                           , button [ onClick UndoMsg, css [ Css.marginTop <| px 50 ] ] [ text "Undo" ]
+                           , button [ onClick ExitMsg, css [ Css.marginTop <| px 50 ] ] [ text "Exit" ]
+                           , br [] []
+                           , button [ onClick ToggleStatsMsg, css [ Css.marginTop <| px 25 ] ]
+                                [ text
+                                    (if s.showStats then
+                                        "Hide Stats"
+
+                                     else
+                                        "Show Stats"
+                                    )
+                                ]
                            ]
                         ++ (if s.legStatus /= Undecided then
                                 [ br [] []
@@ -468,6 +578,7 @@ view s =
                          , tr [] (List.map (\legs -> td [] [ text <| String.fromInt legs ]) <| Dict.values s.playerLegsWon)
                          , tr [] [ td [ colspan 100 ] [ S.hr [] [] ] ]
                          ]
+                            ++ prepareStatsTableRows s
                             ++ preparePointsTableRows s
                         )
                     ]
