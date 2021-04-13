@@ -3,6 +3,7 @@ module Main exposing (main)
 import Browser exposing (Document)
 import Css
 import D501
+import Halbieren
 import Html
 import Html.Styled as S exposing (button, div, h1, option, select, text, textarea, toUnstyled)
 import Html.Styled.Attributes as A exposing (css)
@@ -27,6 +28,7 @@ type State
     | TacticsState Tactics.State
     | D501State D501.State
     | MinusState Minus.State
+    | HalbierenState Halbieren.State
 
 
 type Msg
@@ -36,6 +38,7 @@ type Msg
     | TacticsMsg Tactics.Msg
     | D501Msg D501.Msg
     | MinusMsg Minus.Msg
+    | HalbierenMsg Halbieren.Msg
 
 
 initState : State
@@ -48,7 +51,13 @@ games =
     [ "Tactics"
     , "501"
     , "Minus"
+    , "Halbieren"
     ]
+
+
+makePlayerList : String -> List String
+makePlayerList players =
+    List.filter (\str -> not <| String.isEmpty str) <| String.split "\n" players
 
 
 update : Msg -> State -> ( State, C.Cmd a )
@@ -75,6 +84,13 @@ update m s =
             else
                 ( MinusState <| Minus.update mm ms, C.none )
 
+        ( HalbierenMsg hm, HalbierenState hs ) ->
+            if Halbieren.isExitMsg hm then
+                ( initState, C.none )
+
+            else
+                ( HalbierenState <| Halbieren.update hm hs, C.none )
+
         ( gsm, GameSelect sel players ) ->
             case gsm of
                 PlayersChange new_players ->
@@ -86,13 +102,16 @@ update m s =
                 GameStart ->
                     case sel of
                         "Tactics" ->
-                            ( TacticsState <| Tactics.makeInitState <| List.filter (\str -> not <| String.isEmpty str) <| String.split "\n" players, C.none )
+                            ( TacticsState <| Tactics.makeInitState <| makePlayerList players, C.none )
 
                         "501" ->
-                            ( D501State <| D501.makeInitState <| List.filter (\str -> not <| String.isEmpty str) <| String.split "\n" players, C.none )
+                            ( D501State <| D501.makeInitState <| makePlayerList players, C.none )
 
                         "Minus" ->
-                            ( MinusState <| Minus.makeInitState <| List.filter (\str -> not <| String.isEmpty str) <| String.split "\n" players, C.none )
+                            ( MinusState <| Minus.makeInitState <| makePlayerList players, C.none )
+
+                        "Halbieren" ->
+                            ( HalbierenState <| Halbieren.makeInitState <| makePlayerList players, C.none )
 
                         _ ->
                             ( s, C.none )
@@ -120,6 +139,9 @@ view s =
 
         MinusState ms ->
             mapDocument MinusMsg <| Minus.view ms
+
+        HalbierenState hs ->
+            mapDocument HalbierenMsg <| Halbieren.view hs
 
         GameSelect sel players ->
             { title = "Darts Scoreboard"
