@@ -57,7 +57,9 @@ games =
 
 makePlayerList : String -> List String
 makePlayerList players =
-    List.filter (\str -> not <| String.isEmpty str) <| String.split "\n" players
+    String.split "\n" players
+        |> List.map String.trim
+        |> List.filter (String.isEmpty >> not)
 
 
 update : Msg -> State -> ( State, C.Cmd a )
@@ -100,21 +102,25 @@ update m s =
                     ( GameSelect new_sel players, C.none )
 
                 GameStart ->
-                    case sel of
-                        "Tactics" ->
-                            ( TacticsState <| Tactics.makeInitState <| makePlayerList players, C.none )
+                    if makePlayerList players |> List.isEmpty then
+                        ( s, C.none )
 
-                        "501" ->
-                            ( D501State <| D501.makeInitState <| makePlayerList players, C.none )
+                    else
+                        case sel of
+                            "Tactics" ->
+                                ( TacticsState <| Tactics.makeInitState <| makePlayerList players, C.none )
 
-                        "Minus" ->
-                            ( MinusState <| Minus.makeInitState <| makePlayerList players, C.none )
+                            "501" ->
+                                ( D501State <| D501.makeInitState <| makePlayerList players, C.none )
 
-                        "Halbieren" ->
-                            ( HalbierenState <| Halbieren.makeInitState <| makePlayerList players, C.none )
+                            "Minus" ->
+                                ( MinusState <| Minus.makeInitState <| makePlayerList players, C.none )
 
-                        _ ->
-                            ( s, C.none )
+                            "Halbieren" ->
+                                ( HalbierenState <| Halbieren.makeInitState <| makePlayerList players, C.none )
+
+                            _ ->
+                                ( s, C.none )
 
                 _ ->
                     ( s, C.none )

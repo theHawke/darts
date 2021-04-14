@@ -479,6 +479,27 @@ preparePointsTableRows s =
             transposeWithDefault rows "" pointsLists
     in
     List.map (tr [ css [ Css.padding (px 10) ] ] << List.map makeTD) rowStrings
+        |> addHBars [ 4, 3, 3, 3 ]
+
+
+addHBars : List Int -> List (S.Html a) -> List (S.Html a)
+addHBars strides rows =
+    case strides of
+        [] ->
+            rows
+
+        s :: ss ->
+            let
+                before =
+                    List.take s rows
+
+                after =
+                    List.drop s rows
+            in
+            before
+                ++ td [ colspan 100, css [ Css.height <| px 10 ] ]
+                    [ S.hr [] [] ]
+                :: addHBars ss after
 
 
 transposeWithDefault : Int -> a -> List (List a) -> List (List a)
@@ -494,29 +515,27 @@ transposeWithDefault length default matrix =
 view : State -> Browser.Document Msg
 view s =
     let
+        numPlayers =
+            Array.length s.playerNames
+
         currentPlayer =
             Array.get s.currentPlayer s.playerNames |> Maybe.withDefault ""
+
+        currentRoundNo =
+            (Dict.get s.currentPlayer s.playerPoints
+                |> Maybe.withDefault [ 0 ]
+                |> List.length
+            )
+                - 1
+
+        currentRound =
+            Array.get currentRoundNo rounds |> Maybe.withDefault Bull
 
         currentScore =
             String.fromInt <| s.currentPoints
 
-        findNextPlayer p =
-            -- possibly skip over players that have already finished
-            let
-                nextCandidate =
-                    modBy (Array.length s.playerNames) (p + 1)
-
-                finished =
-                    getPlayerPoints nextCandidate s.playerPoints == 0
-            in
-            if not finished || nextCandidate == s.currentPlayer then
-                nextCandidate
-
-            else
-                findNextPlayer nextCandidate
-
         nextUp =
-            Array.get (findNextPlayer s.currentPlayer) s.playerNames |> Maybe.withDefault ""
+            Array.get (modBy numPlayers (s.currentPlayer + 1)) s.playerNames |> Maybe.withDefault ""
     in
     { title = "Halbieren"
     , body =
@@ -533,7 +552,12 @@ view s =
                         , Css.textAlign Css.center
                         ]
                     ]
-                    ([ span [ css [ Css.fontSize <| pt 20 ] ] [ text currentPlayer ]
+                    ([ span [ css [ Css.fontSize <| pt 14 ] ] [ text "Round:" ]
+                     , br [] []
+                     , span [ css [ Css.fontSize <| pt 24 ] ] [ text <| roundName currentRound ]
+                     , br [] []
+                     , br [] []
+                     , span [ css [ Css.fontSize <| pt 20 ] ] [ text currentPlayer ]
                      , br [] []
                      ]
                         ++ (List.repeat s.currentDarts <| S.img [ src "dart.svg", width 20, css [ Css.margin <| px 2 ] ] [])

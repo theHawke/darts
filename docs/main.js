@@ -5202,6 +5202,13 @@ var $author$project$Main$MinusState = function (a) {
 var $author$project$Main$TacticsState = function (a) {
 	return {$: 'TacticsState', a: a};
 };
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
 var $author$project$D501$ExitMsg = {$: 'ExitMsg'};
 var $author$project$D501$isExitMsg = function (m) {
 	return _Utils_eq(m, $author$project$D501$ExitMsg);
@@ -5547,6 +5554,11 @@ var $author$project$Tactics$makeInitState = function (players) {
 		teamBPoints: 0
 	};
 };
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -5559,13 +5571,15 @@ var $elm$core$List$filter = F2(
 			list);
 	});
 var $elm$core$Basics$not = _Basics_not;
+var $elm$core$String$trim = _String_trim;
 var $author$project$Main$makePlayerList = function (players) {
 	return A2(
 		$elm$core$List$filter,
-		function (str) {
-			return !$elm$core$String$isEmpty(str);
-		},
-		A2($elm$core$String$split, '\n', players));
+		A2($elm$core$Basics$composeR, $elm$core$String$isEmpty, $elm$core$Basics$not),
+		A2(
+			$elm$core$List$map,
+			$elm$core$String$trim,
+			A2($elm$core$String$split, '\n', players)));
 };
 var $author$project$D501$DartHE = function (a) {
 	return {$: 'DartHE', a: a};
@@ -7115,33 +7129,38 @@ var $author$project$Main$update = F2(
 								A2($author$project$Main$GameSelect, new_sel, players),
 								$elm$core$Platform$Cmd$none);
 						case 'GameStart':
-							switch (sel) {
-								case 'Tactics':
-									return _Utils_Tuple2(
-										$author$project$Main$TacticsState(
-											$author$project$Tactics$makeInitState(
-												$author$project$Main$makePlayerList(players))),
-										$elm$core$Platform$Cmd$none);
-								case '501':
-									return _Utils_Tuple2(
-										$author$project$Main$D501State(
-											$author$project$D501$makeInitState(
-												$author$project$Main$makePlayerList(players))),
-										$elm$core$Platform$Cmd$none);
-								case 'Minus':
-									return _Utils_Tuple2(
-										$author$project$Main$MinusState(
-											$author$project$Minus$makeInitState(
-												$author$project$Main$makePlayerList(players))),
-										$elm$core$Platform$Cmd$none);
-								case 'Halbieren':
-									return _Utils_Tuple2(
-										$author$project$Main$HalbierenState(
-											$author$project$Halbieren$makeInitState(
-												$author$project$Main$makePlayerList(players))),
-										$elm$core$Platform$Cmd$none);
-								default:
-									return _Utils_Tuple2(s, $elm$core$Platform$Cmd$none);
+							if ($elm$core$List$isEmpty(
+								$author$project$Main$makePlayerList(players))) {
+								return _Utils_Tuple2(s, $elm$core$Platform$Cmd$none);
+							} else {
+								switch (sel) {
+									case 'Tactics':
+										return _Utils_Tuple2(
+											$author$project$Main$TacticsState(
+												$author$project$Tactics$makeInitState(
+													$author$project$Main$makePlayerList(players))),
+											$elm$core$Platform$Cmd$none);
+									case '501':
+										return _Utils_Tuple2(
+											$author$project$Main$D501State(
+												$author$project$D501$makeInitState(
+													$author$project$Main$makePlayerList(players))),
+											$elm$core$Platform$Cmd$none);
+									case 'Minus':
+										return _Utils_Tuple2(
+											$author$project$Main$MinusState(
+												$author$project$Minus$makeInitState(
+													$author$project$Main$makePlayerList(players))),
+											$elm$core$Platform$Cmd$none);
+									case 'Halbieren':
+										return _Utils_Tuple2(
+											$author$project$Main$HalbierenState(
+												$author$project$Halbieren$makeInitState(
+													$author$project$Main$makePlayerList(players))),
+											$elm$core$Platform$Cmd$none);
+									default:
+										return _Utils_Tuple2(s, $elm$core$Platform$Cmd$none);
+								}
 							}
 						default:
 							return _Utils_Tuple2(s, $elm$core$Platform$Cmd$none);
@@ -7228,13 +7247,6 @@ var $elm$core$List$all = F2(
 			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
 			list);
 	});
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
 var $rtfeldman$elm_css$Css$Structure$compactHelp = F2(
 	function (declaration, _v0) {
 		var keyframesByName = _v0.a;
@@ -9902,11 +9914,6 @@ var $author$project$Dartboard$circleArc = F8(
 				attr),
 			_List_Nil);
 	});
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var $author$project$Util$even = A2(
 	$elm$core$Basics$composeR,
 	$elm$core$Basics$modBy(2),
@@ -10881,6 +10888,60 @@ var $author$project$Halbieren$DartboardMsg = function (a) {
 	return {$: 'DartboardMsg', a: a};
 };
 var $author$project$Halbieren$UndoMsg = {$: 'UndoMsg'};
+var $elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
+var $rtfeldman$elm_css$Css$height = $rtfeldman$elm_css$Css$prop1('height');
+var $author$project$Halbieren$addHBars = F2(
+	function (strides, rows) {
+		if (!strides.b) {
+			return rows;
+		} else {
+			var s = strides.a;
+			var ss = strides.b;
+			var before = A2($elm$core$List$take, s, rows);
+			var after = A2($elm$core$List$drop, s, rows);
+			return _Utils_ap(
+				before,
+				A2(
+					$elm$core$List$cons,
+					A2(
+						$rtfeldman$elm_css$Html$Styled$td,
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Html$Styled$Attributes$colspan(100),
+								$rtfeldman$elm_css$Html$Styled$Attributes$css(
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Css$height(
+										$rtfeldman$elm_css$Css$px(10))
+									]))
+							]),
+						_List_fromArray(
+							[
+								A2($rtfeldman$elm_css$Html$Styled$hr, _List_Nil, _List_Nil)
+							])),
+					A2($author$project$Halbieren$addHBars, ss, after)));
+		}
+	});
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
 		var _v0 = f(mx);
@@ -11065,48 +11126,46 @@ var $author$project$Halbieren$preparePointsTableRows = function (s) {
 				]));
 	};
 	return A2(
-		$elm$core$List$map,
+		$author$project$Halbieren$addHBars,
+		_List_fromArray(
+			[4, 3, 3, 3]),
 		A2(
-			$elm$core$Basics$composeL,
-			$rtfeldman$elm_css$Html$Styled$tr(
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$Attributes$css(
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Css$padding(
-								$rtfeldman$elm_css$Css$px(10))
-							]))
-					])),
-			$elm$core$List$map(makeTD)),
-		rowStrings);
+			$elm$core$List$map,
+			A2(
+				$elm$core$Basics$composeL,
+				$rtfeldman$elm_css$Html$Styled$tr(
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$Attributes$css(
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Css$padding(
+									$rtfeldman$elm_css$Css$px(10))
+								]))
+						])),
+				$elm$core$List$map(makeTD)),
+			rowStrings));
 };
 var $author$project$Halbieren$view = function (s) {
-	var findNextPlayer = function (p) {
-		findNextPlayer:
-		while (true) {
-			var nextCandidate = A2(
-				$elm$core$Basics$modBy,
-				$elm$core$Array$length(s.playerNames),
-				p + 1);
-			var finished = !A2($author$project$Halbieren$getPlayerPoints, nextCandidate, s.playerPoints);
-			if ((!finished) || _Utils_eq(nextCandidate, s.currentPlayer)) {
-				return nextCandidate;
-			} else {
-				var $temp$p = nextCandidate;
-				p = $temp$p;
-				continue findNextPlayer;
-			}
-		}
-	};
+	var numPlayers = $elm$core$Array$length(s.playerNames);
 	var nextUp = A2(
 		$elm$core$Maybe$withDefault,
 		'',
 		A2(
 			$elm$core$Array$get,
-			findNextPlayer(s.currentPlayer),
+			A2($elm$core$Basics$modBy, numPlayers, s.currentPlayer + 1),
 			s.playerNames));
 	var currentScore = $elm$core$String$fromInt(s.currentPoints);
+	var currentRoundNo = $elm$core$List$length(
+		A2(
+			$elm$core$Maybe$withDefault,
+			_List_fromArray(
+				[0]),
+			A2($elm$core$Dict$get, s.currentPlayer, s.playerPoints))) - 1;
+	var currentRound = A2(
+		$elm$core$Maybe$withDefault,
+		$author$project$Halbieren$Bull,
+		A2($elm$core$Array$get, currentRoundNo, $author$project$Halbieren$rounds));
 	var currentPlayer = A2(
 		$elm$core$Maybe$withDefault,
 		'',
@@ -11172,6 +11231,40 @@ var $author$project$Halbieren$view = function (s) {
 							_Utils_ap(
 								_List_fromArray(
 									[
+										A2(
+										$rtfeldman$elm_css$Html$Styled$span,
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Html$Styled$Attributes$css(
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Css$fontSize(
+														$rtfeldman$elm_css$Css$pt(14))
+													]))
+											]),
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Html$Styled$text('Round:')
+											])),
+										A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+										A2(
+										$rtfeldman$elm_css$Html$Styled$span,
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Html$Styled$Attributes$css(
+												_List_fromArray(
+													[
+														$rtfeldman$elm_css$Css$fontSize(
+														$rtfeldman$elm_css$Css$pt(24))
+													]))
+											]),
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Html$Styled$text(
+												$author$project$Halbieren$roundName(currentRound))
+											])),
+										A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
+										A2($rtfeldman$elm_css$Html$Styled$br, _List_Nil, _List_Nil),
 										A2(
 										$rtfeldman$elm_css$Html$Styled$span,
 										_List_fromArray(
@@ -11713,7 +11806,6 @@ var $rtfeldman$elm_css$Css$backgroundColor = function (c) {
 };
 var $rtfeldman$elm_css$Css$EmUnits = {$: 'EmUnits'};
 var $rtfeldman$elm_css$Css$em = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$EmUnits, 'em');
-var $rtfeldman$elm_css$Css$height = $rtfeldman$elm_css$Css$prop1('height');
 var $rtfeldman$elm_css$Css$hidden = {borderStyle: $rtfeldman$elm_css$Css$Structure$Compatible, overflow: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'hidden', visibility: $rtfeldman$elm_css$Css$Structure$Compatible};
 var $author$project$Util$intersperseEvery = F3(
 	function (n, x, ls) {
