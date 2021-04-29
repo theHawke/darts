@@ -5202,30 +5202,14 @@ var $author$project$Main$MinusState = function (a) {
 var $author$project$Main$TacticsState = function (a) {
 	return {$: 'TacticsState', a: a};
 };
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
+var $author$project$Halbieren$Bull = {$: 'Bull'};
+var $author$project$Halbieren$Double = {$: 'Double'};
+var $author$project$Halbieren$Green = {$: 'Green'};
+var $author$project$Halbieren$Number = function (a) {
+	return {$: 'Number', a: a};
 };
-var $author$project$D501$ExitMsg = {$: 'ExitMsg'};
-var $author$project$D501$isExitMsg = function (m) {
-	return _Utils_eq(m, $author$project$D501$ExitMsg);
-};
-var $author$project$Halbieren$ExitMsg = {$: 'ExitMsg'};
-var $author$project$Halbieren$isExitMsg = function (m) {
-	return _Utils_eq(m, $author$project$Halbieren$ExitMsg);
-};
-var $author$project$Minus$ExitMsg = {$: 'ExitMsg'};
-var $author$project$Minus$isExitMsg = function (m) {
-	return _Utils_eq(m, $author$project$Minus$ExitMsg);
-};
-var $author$project$Tactics$ExitMsg = {$: 'ExitMsg'};
-var $author$project$Tactics$isExitMsg = function (m) {
-	return _Utils_eq(m, $author$project$Tactics$ExitMsg);
-};
-var $author$project$D501$Undecided = {$: 'Undecided'};
+var $author$project$Halbieren$Red = {$: 'Red'};
+var $author$project$Halbieren$Triple = {$: 'Triple'};
 var $elm$core$Array$fromListHelp = F3(
 	function (list, nodeList, nodeListSize) {
 		fromListHelp:
@@ -5261,6 +5245,49 @@ var $elm$core$Array$fromList = function (list) {
 		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
 	}
 };
+var $author$project$Halbieren$defaultRounds = $elm$core$Array$fromList(
+	_List_fromArray(
+		[
+			$author$project$Halbieren$Number(20),
+			$author$project$Halbieren$Number(19),
+			$author$project$Halbieren$Triple,
+			$author$project$Halbieren$Number(18),
+			$author$project$Halbieren$Number(17),
+			$author$project$Halbieren$Double,
+			$author$project$Halbieren$Number(16),
+			$author$project$Halbieren$Number(15),
+			$author$project$Halbieren$Red,
+			$author$project$Halbieren$Number(14),
+			$author$project$Halbieren$Number(13),
+			$author$project$Halbieren$Green,
+			$author$project$Halbieren$Number(12),
+			$author$project$Halbieren$Number(11),
+			$author$project$Halbieren$Bull
+		]));
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$D501$ExitMsg = {$: 'ExitMsg'};
+var $author$project$D501$isExitMsg = function (m) {
+	return _Utils_eq(m, $author$project$D501$ExitMsg);
+};
+var $author$project$Halbieren$ExitMsg = {$: 'ExitMsg'};
+var $author$project$Halbieren$isExitMsg = function (m) {
+	return _Utils_eq(m, $author$project$Halbieren$ExitMsg);
+};
+var $author$project$Minus$ExitMsg = {$: 'ExitMsg'};
+var $author$project$Minus$isExitMsg = function (m) {
+	return _Utils_eq(m, $author$project$Minus$ExitMsg);
+};
+var $author$project$Tactics$ExitMsg = {$: 'ExitMsg'};
+var $author$project$Tactics$isExitMsg = function (m) {
+	return _Utils_eq(m, $author$project$Tactics$ExitMsg);
+};
+var $author$project$D501$Undecided = {$: 'Undecided'};
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Dict$Black = {$: 'Black'};
@@ -5454,27 +5481,30 @@ var $elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
 };
-var $author$project$Halbieren$initPoints = function (numPlayers) {
-	return $elm$core$Dict$fromList(
-		A2(
-			$author$project$Util$zip,
-			A2($elm$core$List$range, 0, numPlayers - 1),
+var $author$project$Halbieren$initPoints = F2(
+	function (numPlayers, initPts) {
+		return $elm$core$Dict$fromList(
 			A2(
-				$elm$core$List$repeat,
-				numPlayers,
-				$elm$core$List$singleton(100))));
-};
-var $author$project$Halbieren$makeInitState = function (players) {
-	var numPlayers = $elm$core$List$length(players);
-	return {
-		currentDarts: 3,
-		currentPlayer: 0,
-		currentPoints: 0,
-		history: _List_Nil,
-		playerNames: $elm$core$Array$fromList(players),
-		playerPoints: $author$project$Halbieren$initPoints(numPlayers)
-	};
-};
+				$author$project$Util$zip,
+				A2($elm$core$List$range, 0, numPlayers - 1),
+				A2(
+					$elm$core$List$repeat,
+					numPlayers,
+					$elm$core$List$singleton(initPts))));
+	});
+var $author$project$Halbieren$makeInitState = F3(
+	function (initPts, rounds, players) {
+		var numPlayers = $elm$core$List$length(players);
+		return {
+			currentDarts: 3,
+			currentPlayer: 0,
+			currentPoints: 0,
+			history: _List_Nil,
+			playerNames: $elm$core$Array$fromList(players),
+			playerPoints: A2($author$project$Halbieren$initPoints, numPlayers, initPts),
+			rounds: rounds
+		};
+	});
 var $author$project$Minus$Unused = {$: 'Unused'};
 var $author$project$Minus$makeInitState = function (players) {
 	var numPlayers = $elm$core$List$length(players);
@@ -5581,6 +5611,28 @@ var $author$project$Main$makePlayerList = function (players) {
 			$elm$core$String$trim,
 			A2($elm$core$String$split, '\n', players)));
 };
+var $author$project$Halbieren$Dbl = function (a) {
+	return {$: 'Dbl', a: a};
+};
+var $author$project$Halbieren$Tri = function (a) {
+	return {$: 'Tri', a: a};
+};
+var $author$project$Main$specialRounds = $elm$core$Array$fromList(
+	_List_fromArray(
+		[
+			$author$project$Halbieren$Tri(9),
+			$author$project$Halbieren$Number(3),
+			$author$project$Halbieren$Number(8),
+			$author$project$Halbieren$Number(12),
+			$author$project$Halbieren$Number(19),
+			$author$project$Halbieren$Dbl(16),
+			$author$project$Halbieren$Number(18),
+			$author$project$Halbieren$Number(9),
+			$author$project$Halbieren$Tri(6),
+			$author$project$Halbieren$Number(3),
+			$author$project$Halbieren$Dbl(13),
+			$author$project$Halbieren$Number(1)
+		]));
 var $author$project$D501$DartHE = function (a) {
 	return {$: 'DartHE', a: a};
 };
@@ -6421,9 +6473,6 @@ var $author$project$D501$update = F2(
 				return state;
 		}
 	});
-var $author$project$Halbieren$Number = function (a) {
-	return {$: 'Number', a: a};
-};
 var $author$project$Halbieren$addPlayerPoints = F3(
 	function (player, table, points) {
 		return A3(
@@ -6589,34 +6638,16 @@ var $author$project$Halbieren$isValidForRound = F2(
 				return $author$project$Halbieren$isGreen(dart);
 			case 'Red':
 				return $author$project$Halbieren$isRed(dart);
-			default:
+			case 'Bull':
 				return $author$project$Halbieren$isBull(dart);
+			case 'Tri':
+				var n = round.a;
+				return A2($author$project$Halbieren$isNumber, n, dart) && $author$project$Halbieren$isTriple(dart);
+			default:
+				var n = round.a;
+				return A2($author$project$Halbieren$isNumber, n, dart) && $author$project$Halbieren$isDouble(dart);
 		}
 	});
-var $author$project$Halbieren$Bull = {$: 'Bull'};
-var $author$project$Halbieren$Double = {$: 'Double'};
-var $author$project$Halbieren$Green = {$: 'Green'};
-var $author$project$Halbieren$Red = {$: 'Red'};
-var $author$project$Halbieren$Triple = {$: 'Triple'};
-var $author$project$Halbieren$rounds = $elm$core$Array$fromList(
-	_List_fromArray(
-		[
-			$author$project$Halbieren$Number(20),
-			$author$project$Halbieren$Number(19),
-			$author$project$Halbieren$Triple,
-			$author$project$Halbieren$Number(18),
-			$author$project$Halbieren$Number(17),
-			$author$project$Halbieren$Double,
-			$author$project$Halbieren$Number(16),
-			$author$project$Halbieren$Number(15),
-			$author$project$Halbieren$Red,
-			$author$project$Halbieren$Number(14),
-			$author$project$Halbieren$Number(13),
-			$author$project$Halbieren$Green,
-			$author$project$Halbieren$Number(12),
-			$author$project$Halbieren$Number(11),
-			$author$project$Halbieren$Bull
-		]));
 var $author$project$Halbieren$dartThrowUpdate = F2(
 	function (d, s) {
 		var turnFinished = s.currentDarts === 1;
@@ -6633,7 +6664,7 @@ var $author$project$Halbieren$dartThrowUpdate = F2(
 		var currentRound = A2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Halbieren$Number(-1),
-			A2($elm$core$Array$get, currentRoundNo, $author$project$Halbieren$rounds));
+			A2($elm$core$Array$get, currentRoundNo, s.rounds));
 		var gameFinished = _Utils_eq(
 			currentRound,
 			$author$project$Halbieren$Number(-1));
@@ -7155,7 +7186,19 @@ var $author$project$Main$update = F2(
 									case 'Halbieren':
 										return _Utils_Tuple2(
 											$author$project$Main$HalbierenState(
-												$author$project$Halbieren$makeInitState(
+												A3(
+													$author$project$Halbieren$makeInitState,
+													100,
+													$author$project$Halbieren$defaultRounds,
+													$author$project$Main$makePlayerList(players))),
+											$elm$core$Platform$Cmd$none);
+									case 'Halbieren (1. Mai)':
+										return _Utils_Tuple2(
+											$author$project$Main$HalbierenState(
+												A3(
+													$author$project$Halbieren$makeInitState,
+													125,
+													$author$project$Main$specialRounds,
 													$author$project$Main$makePlayerList(players))),
 											$elm$core$Platform$Cmd$none);
 									default:
@@ -8912,7 +8955,7 @@ var $rtfeldman$elm_css$Html$Styled$Internal$css = function (styles) {
 var $rtfeldman$elm_css$Html$Styled$Attributes$css = $rtfeldman$elm_css$Html$Styled$Internal$css;
 var $rtfeldman$elm_css$Html$Styled$div = $rtfeldman$elm_css$Html$Styled$node('div');
 var $author$project$Main$games = _List_fromArray(
-	['Tactics', '501', 'Minus', 'Halbieren']);
+	['Tactics', '501', 'Minus', 'Halbieren', 'Halbieren (1. Mai)']);
 var $rtfeldman$elm_css$Html$Styled$h1 = $rtfeldman$elm_css$Html$Styled$node('h1');
 var $author$project$Main$SelectChange = function (a) {
 	return {$: 'SelectChange', a: a};
@@ -10919,7 +10962,7 @@ var $author$project$Halbieren$addHBars = F2(
 			var ss = strides.b;
 			var before = A2($elm$core$List$take, s, rows);
 			var after = A2($elm$core$List$drop, s, rows);
-			return _Utils_ap(
+			return ($elm$core$List$length(after) <= 1) ? rows : _Utils_ap(
 				before,
 				A2(
 					$elm$core$List$cons,
@@ -10974,7 +11017,7 @@ var $author$project$Halbieren$getScoreboardWithVictory = function (s) {
 				A2($elm$core$Dict$get, p, s.playerPoints));
 		},
 		players);
-	var noRounds = $elm$core$Array$length($author$project$Halbieren$rounds);
+	var noRounds = $elm$core$Array$length(s.rounds);
 	var lastPoints = A2(
 		$elm$core$List$map,
 		A2(
@@ -11032,8 +11075,14 @@ var $author$project$Halbieren$roundName = function (r) {
 			return 'Red';
 		case 'Green':
 			return 'Green';
-		default:
+		case 'Bull':
 			return 'Bull';
+		case 'Tri':
+			var i = r.a;
+			return 'T' + $elm$core$String$fromInt(i);
+		default:
+			var i = r.a;
+			return 'D' + $elm$core$String$fromInt(i);
 	}
 };
 var $author$project$Halbieren$transposeWithDefault = F3(
@@ -11060,7 +11109,7 @@ var $author$project$Halbieren$transposeWithDefault = F3(
 					matrix)));
 	});
 var $author$project$Halbieren$preparePointsTableRows = function (s) {
-	var rows = $elm$core$Array$length($author$project$Halbieren$rounds) + 2;
+	var rows = $elm$core$Array$length(s.rounds) + 2;
 	var pointsToString = function (points) {
 		return _Utils_eq(points, -1) ? '☆' : $elm$core$String$fromInt(points);
 	};
@@ -11078,7 +11127,7 @@ var $author$project$Halbieren$preparePointsTableRows = function (s) {
 				A2(
 					$elm$core$List$map,
 					$author$project$Halbieren$roundName,
-					$elm$core$Array$toList($author$project$Halbieren$rounds)))
+					$elm$core$Array$toList(s.rounds)))
 			]),
 		A2(
 			$elm$core$List$map,
@@ -11165,7 +11214,7 @@ var $author$project$Halbieren$view = function (s) {
 	var currentRound = A2(
 		$elm$core$Maybe$withDefault,
 		$author$project$Halbieren$Bull,
-		A2($elm$core$Array$get, currentRoundNo, $author$project$Halbieren$rounds));
+		A2($elm$core$Array$get, currentRoundNo, s.rounds));
 	var currentPlayer = A2(
 		$elm$core$Maybe$withDefault,
 		'',

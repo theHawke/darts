@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Array exposing (Array)
 import Browser exposing (Document)
 import Css
 import D501
@@ -52,6 +53,7 @@ games =
     , "501"
     , "Minus"
     , "Halbieren"
+    , "Halbieren (1. Mai)"
     ]
 
 
@@ -117,7 +119,10 @@ update m s =
                                 ( MinusState <| Minus.makeInitState <| makePlayerList players, C.none )
 
                             "Halbieren" ->
-                                ( HalbierenState <| Halbieren.makeInitState <| makePlayerList players, C.none )
+                                ( HalbierenState <| Halbieren.makeInitState 100 Halbieren.defaultRounds <| makePlayerList players, C.none )
+
+                            "Halbieren (1. Mai)" ->
+                                ( HalbierenState <| Halbieren.makeInitState 125 specialRounds <| makePlayerList players, C.none )
 
                             _ ->
                                 ( s, C.none )
@@ -127,6 +132,24 @@ update m s =
 
         _ ->
             ( s, C.none )
+
+
+specialRounds : Array Halbieren.Round
+specialRounds =
+    Array.fromList
+        [ Halbieren.Tri 9
+        , Halbieren.Number 3
+        , Halbieren.Number 8
+        , Halbieren.Number 12
+        , Halbieren.Number 19
+        , Halbieren.Dbl 16
+        , Halbieren.Number 18
+        , Halbieren.Number 9
+        , Halbieren.Tri 6
+        , Halbieren.Number 3
+        , Halbieren.Dbl 13
+        , Halbieren.Number 1
+        ]
 
 
 mapDocument : (msgA -> msgB) -> Document msgA -> Document msgB

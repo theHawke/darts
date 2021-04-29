@@ -1,4 +1,4 @@
-module Halbieren exposing (Msg, State, isExitMsg, makeInitState, update, view)
+module Halbieren exposing (Msg, Round(..), State, defaultRounds, isExitMsg, makeInitState, update, view)
 
 import Array exposing (Array)
 import Browser
@@ -19,6 +19,7 @@ type alias State =
     , currentPoints : Int
     , playerPoints : Scoreboard
     , history : List HistoryEntry
+    , rounds : Array Round
     }
 
 
@@ -52,6 +53,8 @@ type Round
     | Red
     | Green
     | Bull
+    | Tri Int
+    | Dbl Int
 
 
 roundName : Round -> String
@@ -75,9 +78,15 @@ roundName r =
         Bull ->
             "Bull"
 
+        Tri i ->
+            "T" ++ String.fromInt i
 
-rounds : Array Round
-rounds =
+        Dbl i ->
+            "D" ++ String.fromInt i
+
+
+defaultRounds : Array Round
+defaultRounds =
     Array.fromList
         [ Number 20
         , Number 19
@@ -102,13 +111,13 @@ isExitMsg m =
     m == ExitMsg
 
 
-initPoints : Int -> Scoreboard
-initPoints numPlayers =
-    Dict.fromList <| zip (List.range 0 (numPlayers - 1)) <| List.repeat numPlayers <| List.singleton 100
+initPoints : Int -> Int -> Scoreboard
+initPoints numPlayers initPts =
+    Dict.fromList <| zip (List.range 0 (numPlayers - 1)) <| List.repeat numPlayers <| List.singleton initPts
 
 
-makeInitState : List String -> State
-makeInitState players =
+makeInitState : Int -> Array Round -> List String -> State
+makeInitState initPts rounds players =
     let
         numPlayers =
             List.length players
@@ -117,8 +126,9 @@ makeInitState players =
     , currentDarts = 3
     , currentPoints = 0
     , playerNames = Array.fromList players
-    , playerPoints = initPoints numPlayers
+    , playerPoints = initPoints numPlayers initPts
     , history = []
+    , rounds = rounds
     }
 
 
@@ -240,6 +250,12 @@ isValidForRound round dart =
         Bull ->
             isBull dart
 
+        Tri n ->
+            isNumber n dart && isTriple dart
+
+        Dbl n ->
+            isNumber n dart && isDouble dart
+
 
 dartboardValue : Dartboard -> Int
 dartboardValue d =
@@ -296,7 +312,7 @@ dartThrowUpdate d s =
                 - 1
 
         currentRound =
-            Array.get currentRoundNo rounds
+            Array.get currentRoundNo s.rounds
                 |> Maybe.withDefault (Number -1)
 
         gameFinished =
@@ -405,7 +421,7 @@ getScoreboardWithVictory s =
             List.map (\p -> Dict.get p s.playerPoints |> Maybe.withDefault []) players
 
         noRounds =
-            Array.length rounds
+            Array.length s.rounds
 
         finished =
             List.all (\l -> List.length l == (noRounds + 1)) points
@@ -462,7 +478,7 @@ preparePointsTableRows s =
                 String.fromInt points
 
         pointsLists =
-            [ "" :: (List.map roundName <| Array.toList rounds) ]
+            [ "" :: (List.map roundName <| Array.toList s.rounds) ]
                 ++ List.map
                     (\x ->
                         Dict.get x playerPointsWithVictory
@@ -473,7 +489,7 @@ preparePointsTableRows s =
                     players
 
         rows =
-            Array.length rounds + 2
+            Array.length s.rounds + 2
 
         rowStrings =
             transposeWithDefault rows "" pointsLists
@@ -496,10 +512,14 @@ addHBars strides rows =
                 after =
                     List.drop s rows
             in
-            before
-                ++ td [ colspan 100, css [ Css.height <| px 10 ] ]
-                    [ S.hr [] [] ]
-                :: addHBars ss after
+            if List.length after <= 1 then
+                rows
+
+            else
+                before
+                    ++ td [ colspan 100, css [ Css.height <| px 10 ] ]
+                        [ S.hr [] [] ]
+                    :: addHBars ss after
 
 
 transposeWithDefault : Int -> a -> List (List a) -> List (List a)
@@ -529,7 +549,7 @@ view s =
                 - 1
 
         currentRound =
-            Array.get currentRoundNo rounds |> Maybe.withDefault Bull
+            Array.get currentRoundNo s.rounds |> Maybe.withDefault Bull
 
         currentScore =
             String.fromInt <| s.currentPoints
